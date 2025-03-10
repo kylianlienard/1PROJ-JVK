@@ -79,7 +79,6 @@ short chooseGame() {
 
 void initTab(short board[8][8]) {
     short x, y;
-    short bottom = 0; short right = 0;
     const short quadrants[4][4][4] = {
         {{2, 1, 3, 0}, {0, 3, 2, 2}, {3, 0, 1, 1}, {1, 2, 0, 3}},
         {{3, 1, 2, 0}, {0, 1, 2, 3}, {2, 0, 3, 1}, {1, 3, 0, 2}},
@@ -89,29 +88,29 @@ void initTab(short board[8][8]) {
     short quad[4][4];
     short indexes[4] = {0, 1, 2, 3};
     shuffle(indexes, 4);
-
     printf("indexes %d %d %d %d\n\n", indexes[0], indexes[1], indexes[2], indexes[3]);
-
+    
     for (short i = 0; i < 4; i++) {
         for (x = 0; x < 4; x++) {
             for (y = 0; y < 4; y++) {  
                 quad[x][y] = quadrants[indexes[i]][x][y];
             }
         }
-
+        
         if (randint(0, 1)) {
             flipArray(quad);
         }
-
-        for (short x = 0; x < randint(0, 3); x++) {
+        
+        for (short r = 0; r < randint(0, 3); r++) {
             rotateArray90(quad);
         }
-
-        bottom = (i > 1 ? 4 : 0);
-        right = (i % 2 == 1 ? 4 : 0);
-        for (x = 0 + bottom; x < 4 + bottom; x++) {
-            for (y = 0 + right; y < 4 + right; y++) {
-                board[x][y] = quad[x][y];
+        
+        short right = (i > 1) ? 4 : 0;
+        short bottom = (i % 2 == 1) ? 4 : 0;
+        
+        for (x = 0; x < 4; x++) {
+            for (y = 0; y < 4; y++) {
+                board[x + right][y + bottom] = quad[x][y];
             }
         }
     }
@@ -119,12 +118,9 @@ void initTab(short board[8][8]) {
 
 int main() {
     srand(time(NULL));
-    short board[8][8];
-    initTab(board);
-    displayBoard(board);
-    // displayBoard(board);
+    printf("ccgui");
 
-    /*while (1) {
+    while (1) {
         short c1 = chooseStart();
         
         if (c1 == 1) {
@@ -132,12 +128,13 @@ int main() {
             if (c2 == 4) {
                 continue;
             }
+
             short c3 = chooseGame();
             if (c3 == 4) {
-                continue;
+                break;
             }
-            
-            short board[4][4];
+
+            short board[8][8];
             initTab(board);
             
             if (c3 == 1) {
@@ -147,6 +144,7 @@ int main() {
             } else {
                 printf("Isolation\n");
             }
+
         } else if (c1 == 2) {
             printf("Loading game...\n");
         } else if (c1 == 3) {
@@ -155,5 +153,5 @@ int main() {
             printf("Quitting\n");
             return 0;
         }
-    }*/
+    }
 }
