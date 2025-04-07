@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1744007277 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\main.c
+1744015093 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
 	"katarenga.h"
 
-1744007310 c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\katarenga.h
+1744018362 c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\katarenga.h
 	<stdio.h>
 	<stdlib.h>
 

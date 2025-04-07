@@ -68,8 +68,6 @@ char symbl(short value, short withPawns) {
     } else {
         if (value == 0) {
             return '.';
-        } else if (value ==4) {
-            return '!';
         } else {
             return value + 48;
         }
