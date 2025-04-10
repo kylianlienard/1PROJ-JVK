@@ -14,6 +14,10 @@ short selectPawn(short** pawns, short turn, short x, short y, short printError) 
     return 0;
 }
 
+short possibleCoords(short x, short y) {
+    return 0 <= x && x < 8 && 0 <= y && y < 8;
+}
+
 short canPlace(short** pawns, short turn, short x, short y) {
     return pawns[x][y] != turn + 1;
 }
@@ -32,7 +36,7 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
                 if (i == 0 && j == 0) continue;
                 cox = x + i;
                 coy = y + j;
-                if (0 <= cox && cox < 8 && 0 <= coy && coy < 8 && pawns[cox][coy] == 0) {
+                if (possibleCoords(x, y) && pawns[cox][coy] == 0) {
                     setMovable(pawns, cox, coy);
                 }
             }
@@ -40,7 +44,7 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
         }
         return 1;
     } else if (cell == 3) {
-        short moves[8][8];
+        short moves[8][8]; short reachedPawn =  1;
         moves[0][0] = -1; moves[0][1] = -2;
         moves[1][0] = -2; moves[1][1] = -1;
         moves[2][0] = -2; moves[2][1] = 1;
@@ -53,7 +57,7 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
         for (i = 0; i < 8; i++) {
             cox = x + moves[i][0];
             coy = y + moves[i][1];
-            if (0 <= cox && cox < 8 && 0 <= coy && coy < 8 && canPlace(pawns, turn, cox, coy)) {
+            if (possibleCoords(x, y)) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
                 cox += moves[i][0];
@@ -80,11 +84,15 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
         for (i = 0; i < 4; i++) {
             cox = x + moves[i][0];
             coy = y + moves[i][1];
-            while (0 <= cox && cox < 8 && 0 <= coy && coy < 8 && canPlace(pawns, turn, cox, coy)) {
+            while (possibleCoords(cox, coy) && pawns[cox][coy] == 0) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
                 cox += moves[i][0];
                 coy += moves[i][1];
+            }
+
+            if (possibleCoords(cox, coy) && pawns[cox][coy] == (1 - turn + 1)) {
+                setMovable(pawns, cox, coy);
             }
         }
         return 1;
@@ -95,7 +103,7 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
 
 short moveToCamp(short** pawns, short turn, struct Player* players, short x, short y) {
     pawns[x][y] = 0;
-    // Ici, pawns est affichable
+    players[turn].value++;
 }
 
 short checkCamp(short** pawns, short turn, struct Player* players, short x, short y) {
@@ -130,11 +138,8 @@ void resetCells(short** pawns) {
     printf("im in: ");
     short i, j;
     for (i = 0; i < 8; i++) {
-        printf("i");
         for (j = 0; j < 8; j++) {
-            printf("j");
             if (pawns[i][j] > 2) {
-                printf("IF");
                 pawns[i][j] = pawns[i][j] - 3;
             }
         }
@@ -150,10 +155,6 @@ short showBoard(short** board, short** pawns) {
 }
 
 short endGame(short** pawns, short turn, struct Player* players) {
-    if (players[turn].value == 2) {
-        return 1;
-    }
-
     short oppTurn = switchTurn(turn);
     short nbOppPawn = 0;
 
@@ -183,7 +184,6 @@ void katarenga(short** board, short** pawns, struct Player* players) {
 
         if (checkCamp(pawns, turn, players, x, y)) {
             if (players[turn].value == 2) break;
-            // Ici, pawns n'est plus affichable
         } else {
             printf("\n");
             showBoard(board, pawns);
