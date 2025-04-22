@@ -34,10 +34,19 @@ short displayChoice(const char *question, const short numChoices, const char *ch
     return answer;
 }
 
-int inputInt(const char *question) {
+int inputInt(const char *question, int maxInt) {
     int answer;
-    printf("%s: ", question);
-    scanf("%d", &answer);
+    while (1) {
+        printf("%s: ", question);
+        if (scanf("%d", &answer) != 1) {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+        } else if (answer < 0 || answer > maxInt) {
+            continue;
+        } else {
+            break;
+        }
+    }
     return answer;
 }
 
@@ -75,7 +84,11 @@ char symbl(short value, short withPawns) {
 }
 
 void displayBoard(short** board, short boarded) {
+    printf(" y ");
+    for (short i=0; i < 8; i++) { printf("%d ", i); }
+    printf("\nx+----------------\n");
     for (short i = 0; i < 8; i++) {
+        printf("%d| ", i);
         for (short j = 0; j < 8; j++) {
             printf("%c ", symbl(board[i][j], boarded));
         }

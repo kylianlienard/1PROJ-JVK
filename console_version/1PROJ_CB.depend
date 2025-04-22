@@ -6,7 +6,18 @@
 	<time.h>
 	"katarenga.h"
 
-1744018362 c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\katarenga.h
+1744018462 c:\users\kylia\onedrive - supinfo\documents\github\1proj_cb\katarenga.h
+	<stdio.h>
+	<stdlib.h>
+
+1744285851 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\console_version\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	"katarenga.h"
+
+1745315303 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\console_version\katarenga.h
 	<stdio.h>
 	<stdlib.h>
 
