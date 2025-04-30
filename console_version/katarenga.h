@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void initPawns(short** pawns) {
+const short RED_DIRS[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
+const short BLUE_DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+const short GREEN_DIRS[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+const short YELLOW_DIRS[8][2] = {{-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}, {1, -2}, {2, -1}, {2, 1}, {1, 2}};
+
+void initGame(short** pawns) { /// nom sera commun
     for (short i = 0; i < 8; i++) {
         pawns[0][i] = 2;
         pawns[7][i] = 1;
     }
 }
 
-
-short switchTurn(short turn) {
+short switchTurn(short turn) { /// sera commun
     return 1 - turn;
 }
 
@@ -19,20 +23,26 @@ short selectPawn(short** pawns, short turn, short x, short y, short printError) 
     return 0;
 }
 
-short canPlace(short** pawns, short turn, short x, short y, short round) {
-    if (round < 1) return pawns[x][y] == switchTurn(turn);
-    return pawns[x][y] != turn + 1;
+short correctCoord(short x, short y) { /// sera commun
+    return 0 <= x && x < 8 && 0 <= y && y < 8; // peut-être à remove plus tard si prend trop de place
 }
 
-void setMovable(short** pawns, short x, short y) {
-    pawns[x][y] = pawns[x][y] + 3;
+short canPlace(short** pawns, short turn, short x, short y, short round) { /// sera commun SANS LE ROUND
+    if (!correctCoord(x, y)) return 0;
+    if (round < 1) return pawns[x][y] == 0;
+    return (pawns[x][y] == 0) || (pawns[x][y] != turn + 1);
 }
 
-short correctCoord(short x, short y) {
-    return 0 <= x && x < 8 && 0 <= y && y < 8;
+void setMovable(short** pawns, short x, short y) { /// sera commun
+    pawns[x][y] = 3;
 }
 
-short canMove(short** board, short** pawns, short turn, short cell, short x, short y, short directReturn, short round) {
+short possibleMove(short** pawns, short x, short y) { /// sera commun
+    return pawns[x][y] == 3;
+}
+
+short setMoves(short** board, short** pawns, short turn, short x, short y, short directReturn, short round) { /// sera commun SANS LE ROUND
+    short cell = board[x][y];
     short i, j, cox, coy;
 
     if (cell == 1) { // bleu
@@ -100,16 +110,28 @@ short canMove(short** board, short** pawns, short turn, short cell, short x, sho
     return 0;
 }
 
+void clearMovable(short** pawns) { /// sera commun
+    for (short i = 0; i < 8; i++) {
+        for (short j = 0; j < 8; j++) {
+            if (pawns[i][j] == 3) {
+                pawns[i][j] = 0;
+            } else if (pawns[i][j] == 4) {
+                pawns[i][j] = 1;
+            } else if (pawns[i][j] == 5) {
+                pawns[i][j] = 2;
+            }
+        }
+    }
+}
+
 short moveToCamp(short** pawns, short turn, struct Player* players, short x, short y) {
-    printf("curyurent urn %d", turn);
     pawns[x][y] = 0;
     players[turn].value++;
-    printf("afetr affdding %d", players[turn].value);
     return 1;
 }
 
 short checkCamp(short** pawns, short turn, struct Player* players, short x, short y) {
-    if ((turn == 0 && x == 0) || (turn == 1 && x == 7)) { // white on x0 || black on x7
+    if ((turn == 0 && x == 0) || (turn == 1 && x == 7)) {
         char buffer[2];
         do {
             inputStr("Move to camp? [Y/n]", buffer, 1, 1);
@@ -122,88 +144,71 @@ short checkCamp(short** pawns, short turn, struct Player* players, short x, shor
     return 0;
 }
 
-short selectMove(short** pawns, short x, short y) {
-    if (pawns[x][y] >= 3) return 1;
-    showError("You cannot move this pawn here.");
-    return 0;
-}
 
-void resetCells(short** pawns) {
-    short i, j;
-    for (i = 0; i < 8; i++) {
-        for (j = 0; j < 8; j++) {
-            if (pawns[i][j] > 2) {
-                pawns[i][j] = pawns[i][j] - 3;
-            }
-        }
-    }
-}
-
-short showBoard(short** board, short** pawns) {
-    printf("Board:\n");
-    displayBoard(board, 1);
-    printf("Pawns:\n");
-    displayBoard(pawns, 0);
-    return 1;
-}
-
-short endGame(short** pawns, short turn, struct Player* players) {
-    printf("QEUE %d", players[turn].value);
+short gameEnd(short** pawns, short turn, struct Player* players) { /// nom sera commun
     if (players[turn].value >= 2) {
         return 1;
     }
 
-    short oppTurn = switchTurn(turn);
-    short nbOppPawn = 0;
+    short oppTurn = 1 - turn;
+    short nbOppPiece = 0;
 
     for (short i = 0; i < 8; i++) {
         for (short j = 0; j < 8; j++) {
             if (pawns[i][j] == oppTurn + 1) {
-                if (nbOppPawn++ > 1) {
+                if (++nbOppPiece > 1) {
                     return 0;
                 }
             }
         }
     }
-    printf("Il rste %d pions", nbOppPawn);
 
-    return 0;
+    return 1;
+}
+
+void display2Boards(short** board, short** pawns) { /// sera commun
+    printf("Board:\n");
+    displayBoard(board, 1); // board sera tjrs accomp de 1 et pawns avec 0
+    printf("\nPawns:\n");
+    displayBoard(pawns, 0);
+    printf("\n");
 }
 
 void katarenga(short** board, short** pawns, struct Player* players) {
+    short turn = 0; // joueur actuel 0 - 1
+    short round = 0; // tour, seulement utile pour katarenga
     short x, y, mox, moy;
-    short turn = 0;
-    short round = 0;
 
-    initPawns(pawns);
+    initGame(pawns); // place les pions de base
 
     do {
-        showBoard(board, pawns);
+        display2Boards(board, pawns);
         printf("> Player %d's turn%s:\n", turn + 1, players[turn].value == 1 ? " (1 in camp)" : "");
 
         do {
-            x = inputInt("Enter x [0-7]", 7);
+            x = inputInt("Enter x [0-7]", 7); // 7 est le max de la valeur
             y = inputInt("Enter y [0-7]", 7);
-        } while (!selectPawn(pawns, turn, x, y, 1) || !canMove(board, pawns, turn, board[x][y], x, y, 0, round));
+        } while (!selectPawn(pawns, turn, x, y, 1) || !setMoves(board, pawns, turn, x, y, 0, round));
 
         if (!checkCamp(pawns, turn, players, x, y)) {
             printf("\n");
-            showBoard(board, pawns);
+            display2Boards(board, pawns);
 
             do {
                 mox = inputInt("Move to x [0-7]", 7);
                 moy = inputInt("Move to y [0-7]", 7);
-            } while (!selectMove(pawns, mox, moy));
+            } while (!possibleMove(pawns, mox, moy));
 
             pawns[x][y] = 0;
             pawns[mox][moy] = turn + 1;
         }
 
-        resetCells(pawns);
+        clearMovable(pawns);
+
         turn = switchTurn(turn);
         round++;
 
-    } while (!endGame(pawns, turn, players));
+    } while (!gameEnd(pawns, turn, players));
 
-    printf("Winner is player %d!", turn + 1);
+    printf("Winner is player %d!\n", turn + 1);
 }
