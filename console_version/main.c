@@ -15,7 +15,7 @@ void showError(const char *text) {
     printf("%s\n", text);
 }
 
-unsigned short randint(short maxi) { return ((uint64_t)rand() * maxi) >> 32; }
+unsigned short randint(short maxi) { return rand() % maxi; }
 unsigned short rand8() { return rand() % 8; }
 
 short displayChoice(const char *question, const short numChoices, const char *choices[]) {

@@ -1,2 +1,0 @@
-# 1PROJ-JVK
-1PROJ-SUPINFO par Team JVK

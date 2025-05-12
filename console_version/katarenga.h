@@ -19,7 +19,8 @@ short switchTurn(short turn) { /// sera commun
 
 short selectPawn(short** pawns, short turn, short x, short y, short printError) {
     if (pawns[x][y] == turn + 1) return 1;
-    if (printError) showError("This is not your pawn");
+    if (printError && pawns[x][y] == 1 - turn + 1) showError("This is not your pawn");
+    else if (printError) showError("There is no pawn here");
     return 0;
 }
 
@@ -38,7 +39,9 @@ void setMovable(short** pawns, short x, short y) { /// sera commun
 }
 
 short possibleMove(short** pawns, short x, short y) { /// sera commun
-    return pawns[x][y] == 3;
+    if (pawns[x][y] == 3) return 1;
+    showError("Your pawn cannot move here");
+    return 0;
 }
 
 short setMoves(short** board, short** pawns, short turn, short x, short y, short directReturn, short round) { /// sera commun SANS LE ROUND
@@ -99,7 +102,7 @@ short setMoves(short** board, short** pawns, short turn, short x, short y, short
                 coy += moves[i][1];
             }
 
-            if (correctCoord(cox, coy) && pawns[cox][coy] != turn + 1) {
+            if (correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
             }
@@ -124,7 +127,13 @@ void clearMovable(short** pawns) { /// sera commun
     }
 }
 
+
 short moveToCamp(short** pawns, short turn, struct Player* players, short x, short y) {
+
+    printf("FROM MOVE TO CAMP");
+    displayBoard(pawns, 0);
+
+
     pawns[x][y] = 0;
     players[turn].value++;
     return 1;
@@ -146,17 +155,19 @@ short checkCamp(short** pawns, short turn, struct Player* players, short x, shor
 
 
 short gameEnd(short** pawns, short turn, struct Player* players) { /// nom sera commun
+
     if (players[turn].value >= 2) {
         return 1;
     }
 
-    short oppTurn = 1 - turn;
     short nbOppPiece = 0;
+    short oppPiece = 1 - turn + 1;
 
     for (short i = 0; i < 8; i++) {
         for (short j = 0; j < 8; j++) {
-            if (pawns[i][j] == oppTurn + 1) {
+            if (pawns[i][j] == oppPiece) {
                 if (++nbOppPiece > 1) {
+                    printf("turn %d has %d pieces", turn, nbOppPiece);
                     return 0;
                 }
             }
@@ -205,10 +216,12 @@ void katarenga(short** board, short** pawns, struct Player* players) {
 
         clearMovable(pawns);
 
-        turn = switchTurn(turn);
-        round++;
+        if (gameEnd(pawns, turn, players)) break;
 
-    } while (!gameEnd(pawns, turn, players));
+        turn = switchTurn(turn);
+        if (turn == 0) round++;
+
+    } while (1);
 
     printf("Winner is player %d!\n", turn + 1);
 }
