@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv)
 {
-    printf("Hello world!\n");
+    printf("fuck off\n");
     scanf("Skiidi?");
     return 0;
 }
