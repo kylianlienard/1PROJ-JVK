@@ -73,7 +73,8 @@ char *getPublicIP() {
         struct in_addr addr;
         memcpy(&addr, hp->h_addr_list[i], sizeof(addr));
         const char *ipStr = inet_ntoa(addr);
-        if (strncmp(ipStr, "127.", 4) != 0) {
+        printf("on a %s\n", ipStr);
+        if (strncmp(ipStr, "127.", 4) != 0 && strncmp(ipStr, "10.", 4) != 0 && strncmp(ipStr, "192.", 4) != 0) {
             strcpy(publicIP, ipStr);
             return publicIP;
         }

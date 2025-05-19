@@ -163,3 +163,52 @@ short** init8by8board() {
 
     return eight;
 };
+
+short switchTurn(short turn) { /// sera commun
+    return 1 - turn;
+}
+
+short selectPawn(short** pawns, short turn, short x, short y, short printError) {
+    if (pawns[x][y] == turn + 1) return 1;
+    if (printError && pawns[x][y] == 1 - turn + 1) showError("This is not your pawn");
+    else if (printError) showError("There is no pawn here");
+    return 0;
+}
+
+short correctCoord(short x, short y) { /// sera commun
+    return 0 <= x && x < 8 && 0 <= y && y < 8; // peut-être à remove plus tard si prend trop de place
+}
+
+short canPlace(short** pawns, short turn, short x, short y, short round) { /// sera commun SANS LE ROUND
+    if (!correctCoord(x, y)) return 0;
+    if (round < 1) return pawns[x][y] == 0;
+    return (pawns[x][y] == 0) || (pawns[x][y] != turn + 1);
+}
+
+void setMovable(short** pawns, short x, short y) { /// sera commun
+    pawns[x][y] += 3;
+}
+
+short possibleMove(short** pawns, short x, short y) { /// sera commun
+    if (pawns[x][y] > 2) return 1;
+    showError("Your pawn cannot move here");
+    return 0;
+}
+
+void clearMovable(short** pawns) { /// sera commun
+    for (short i = 0; i < 8; i++) {
+        for (short j = 0; j < 8; j++) {
+            if (pawns[i][j] > 2) {
+                pawns[i][j] -= 3;
+            }
+        }
+    }
+}
+
+void display2Boards(short** board, short** pawns) { /// sera commun
+    printf("Board:\n");
+    displayBoard(board, 1); // board sera tjrs accomp de 1 et pawns avec 0
+    printf("\nPawns:\n");
+    displayBoard(pawns, 0);
+    printf("\n");
+}

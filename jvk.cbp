@@ -60,12 +60,12 @@
 		<Unit filename="src/ai/congress_ai.h" />
 		<Unit filename="src/ai/isolation_ai.h" />
 		<Unit filename="src/ai/katarenga_ai.h" />
-		<Unit filename="src/core/board.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/core/online.h" />
 		<Unit filename="src/core/ui.h" />
 		<Unit filename="src/core/window.h" />
+		<Unit filename="src/game/board.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/game/congress.h" />
 		<Unit filename="src/game/isolation.h" />
 		<Unit filename="src/game/katarenga.h" />

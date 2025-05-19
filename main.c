@@ -12,9 +12,9 @@
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>*/
 
-/*#ifndef "./src/core/board.c"
-#include "./src/core/board.c"
-#endif*/
+//#ifndef board.c POURQUIO???
+//#include "./src/game/board.c"
+//#endif
 #include "./src/core/ui.h"
 #include "./src/core/window.h"
 
@@ -23,13 +23,10 @@ struct Player {
     short value;
 };
 
-void addValuePlayer(struct Player player) { player.value++; }
-short getValuePlayer(struct Player player) { return player.value; }
-
 #include "./src/game/katarenga.h"
 
 int main() {
-    short c1, c2, c3;
+    // short c1, c2, c3;
     srand(time(NULL));
 
     struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
@@ -53,6 +50,7 @@ int main() {
     return endWindow(players, pawns, board);
 }
 
+// Fonctionne SDL
 /* void showMainMenu(SDL_Renderer* renderer, int width, int height, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Fond gris clair
     SDL_RenderClear(renderer);
