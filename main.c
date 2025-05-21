@@ -1,4 +1,4 @@
-// Tous les initialiseurs.
+// All inits (SDL window, time), SDL main, window manager
 
 #include <stdio.h>
 //#include <stdlib.h>
@@ -11,12 +11,19 @@
 #include <SDL2/SDL_image.h>
 //#include <SDL2/SDL_mixer.h>
 
-#ifndef boardfile
-#include "./src/game/board_ui.h"
-#endif
+#include "./src/core/ui.h"
+#include "./src/core/menu.h"
+//#include "./src/game/board.c"
 
-//#include "./src/core/ui.h"
-//#include "./src/core/window.h"
+int debug(int argc, char *argv[]) {
+    printf("Main init\n");
+    ui_debug();
+    printf("--------------------------\n");
+    menu_debug();
+    printf("--------------------------\n");
+    board_debug();
+    return 0;
+}
 
 #define GRID_SIZE 8
 #define CHAR_LENGTH 32
@@ -27,15 +34,11 @@ struct Player {
 };
 
 int main(int argc, char* argv[]);
-short click(short x, short y);
+short click(short x, short y) {}
 
 //#include "./src/game/katarenga.h"
 
-short click(short x, short y) {}
-
 int main(int argc, char* argv[]) {
-
-    showError("There is no pawn here");
 
     //- Testing SDL librairies -\\
 
@@ -72,8 +75,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (short plna = 0; plna < 2; plna++) {
-        /*printf("Player %d name: ", plna + 1);
-        scanf("%19s", players[plna].name);*/
+        //printf("Player %d name: ", plna + 1);
+        //scanf("%19s", players[plna].name);
         players[plna].value = 0;
     }
 
@@ -101,7 +104,7 @@ int main(int argc, char* argv[]) {
 }
 
 // Fonctionne SDL
-/* void showMainMenu(SDL_Renderer* renderer, int width, int height, TTF_Font* font) {
+ /**void showMainMenu(SDL_Renderer* renderer, int width, int height, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Fond gris clair
     SDL_RenderClear(renderer);
 
@@ -189,4 +192,4 @@ SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN);
     SDL_Quit();
 
     return 0;
-} */
+}**/
