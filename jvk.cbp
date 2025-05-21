@@ -66,6 +66,7 @@
 		<Unit filename="src/game/board.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/game/board_ui.h" />
 		<Unit filename="src/game/congress.h" />
 		<Unit filename="src/game/isolation.h" />
 		<Unit filename="src/game/katarenga.h" />

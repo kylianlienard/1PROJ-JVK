@@ -1,32 +1,68 @@
 // Tous les initialiseurs.
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+//#include <stdlib.h>
+//#include <stdint.h>
 #include <string.h>
 #include <time.h>
 
-/*#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <stdio.h>*/
+//#include <SDL2/SDL_mixer.h>
 
-//#ifndef board.c POURQUIO???
-//#include "./src/game/board.c"
-//#endif
-#include "./src/core/ui.h"
-#include "./src/core/window.h"
+#ifndef boardfile
+#include "./src/game/board_ui.h"
+#endif
+
+//#include "./src/core/ui.h"
+//#include "./src/core/window.h"
+
+#define GRID_SIZE 8
+#define CHAR_LENGTH 32
 
 struct Player {
     char name[20];
     short value;
 };
 
-#include "./src/game/katarenga.h"
+int main(int argc, char* argv[]);
+short click(short x, short y);
 
-int main() {
-    // short c1, c2, c3;
+//#include "./src/game/katarenga.h"
+
+short click(short x, short y) {}
+
+int main(int argc, char* argv[]) {
+
+    showError("There is no pawn here");
+
+    //- Testing SDL librairies -\\
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("Erreur d'initialisation SDL: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    SDL_Window* window = SDL_CreateWindow("App", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    if (!window) {
+        printf("Erreur de creation de fenetre: %s\n", SDL_GetError());
+        SDL_Quit();
+        return -1;
+    }
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) {
+        printf("Erreur de creation de renderer: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    // more tests
+
+    //- Init common values -\\
+
     srand(time(NULL));
 
     struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
@@ -41,13 +77,27 @@ int main() {
         players[plna].value = 0;
     }
 
-    short** board = init8by8board();
-    short** pawns = init8by8board();
+    //- Loop -\\
 
-    initBoard(board);
-    katarenga(board, pawns, players);
+    int running = 1;
+    SDL_Event event;
 
-    return endWindow(players, pawns, board);
+    while (running) {
+        while (SDL_PollEvent(&event)) { // tous event
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                click(event.button.x, event.button.y);
+            }
+            //printf("je suis pollevent ");
+        }
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
 }
 
 // Fonctionne SDL
