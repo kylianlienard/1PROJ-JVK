@@ -278,6 +278,7 @@ void clearMovable(short** pawns) {
 
 int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     SDL_Event event;
+    short redraw = 0;
     short playingGame = 0; // which game
     short gameState = 0; // 0 rien, 1 un pion est select, -1 si fin. ne change pas si isolation
     short prevGameState = 0;
@@ -288,12 +289,13 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
 
     struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
     if (!players) {
-        d("ALLOC ERROR: players\n");
+        printf("ALLOC ERROR: players\n");
         exit(1);
     }
+
     for (short plna = 0; plna < 2; plna++) {
-        //printf("Player %d name: ", plna + 1);
-        //scanf("%19s", players[plna].name);
+        /*printf("Player %d name: ", plna + 1);
+        scanf("%32s", players[plna].name);*/
         players[plna].value = 0;
     }
 
@@ -301,16 +303,24 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     short** pawns = init8by8board();
 
     generateBoard(board);
+
+    switch(playingGame) {
+    case 0:
+        setKatarengaPawns(pawns); break;
+    }
     drawBoard(renderer, board, sWE);
+    SDL_RenderPresent(renderer);
 
     while (1) {
         while (SDL_PollEvent(&event)) { // bouge souris
             switch(event.type){
             case SDL_QUIT:
                 return 0;
-            case SDL_WINDOWEVENT_RESIZED:
+            case SDL_WINDOWEVENT:
                 d("Window resized");
                 sWE = getShortestWindowEdge(window);
+                redraw = 1;
+                break;
             case SDL_MOUSEBUTTONDOWN:
                 clickXY = gridClick(event.button.x, event.button.y, sWE);
 
@@ -338,9 +348,28 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
                     //drawBoard(renderer, board, sWE);
 
                     printf("Player %d's turn", turn + 1);
+                } else {
                 }
+                redraw = 1;
+                break;
             }
         }
+
+
+
+        if (redraw) { // Only redraws when not a mouse move
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderClear(renderer);
+
+            drawBoard(renderer, board, sWE);
+            //drawPawns()
+            //drawUI()
+
+            redraw = 0;
+            SDL_RenderPresent(renderer);
+            display2Boards(board, pawns); //temp
+        }
+
 
     }
 

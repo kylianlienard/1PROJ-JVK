@@ -16,9 +16,55 @@ void board_ui_debug() {
     board_use();
 }
 
+//- TEMP AVANT GUI -//
+
+char symbl(short value, short boardTab) {
+    if (boardTab) {
+        switch (value) {
+            case 0: return '+';
+            case 1: return 'O';
+            case 2: return '*';
+            case 3: return 'L';
+            default: return '?';
+        }
+    } else {
+        if (value == 0) {
+            return '.';
+        } else {
+            return value + '0';
+        }
+    }
+}
+
+void displayBoard(short** board, short boardTab) { // si boardTab == 1 cela affichera les symboles pour "board",  pour "pawns"
+    printf(" y ");
+    for (short i = 0; i < 8; i++) {
+        printf("%d ", i);
+    }
+    printf("\nx+----------------\n");
+    for (short i = 0; i < 8; i++) {
+        printf("%d| ", i);
+        for (short j = 0; j < 8; j++) {
+            printf("%c ", symbl(board[i][j], boardTab));
+        }
+        printf("\n");
+    }
+}
+
+void display2Boards(short** board, short** pawns) { /// sera commun
+    printf("Board:\n");
+    displayBoard(board, 1); // board sera tjrs accomp de 1 et pawns avec 0
+    printf("\nPawns:\n");
+    displayBoard(pawns, 0);
+    printf("\n");
+}
+
+
+
 void drawBoard(SDL_Renderer* renderer, short** board, short sWE) {
 
     int cellSize = sWE / 8;
+    printf("the cell size %d\n", cellSize);
 
     d("Drawing grid");
 
@@ -41,10 +87,11 @@ void drawBoard(SDL_Renderer* renderer, short** board, short sWE) {
             }
             SDL_Rect cell = {x * cellSize, y * cellSize, cellSize, cellSize};
             SDL_RenderFillRect(renderer, &cell);
-            d("Rectangle created");
         }
     }
 }
+
+//- VRAI -//
 
 short gridClick(short mouseX, short mouseY, short sWE) {
     int cellSize = sWE / 8;

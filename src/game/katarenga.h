@@ -14,6 +14,13 @@ struct Player { // temp
 
 #include <stdio.h>
 
+void setKatarengaPawns(short** pawns) { /// nom sera commun
+    for (short i = 0; i < 8; i++) {
+        pawns[0][i] = 2;
+        pawns[7][i] = 1;
+    }
+}
+
 short canCamp(short turn, short x, short y) {
     return ((turn == 0 && x == 0) || (turn == 1 && x == 7));
 }
@@ -41,6 +48,7 @@ short katarengaEnd(short** pawns, short turn, struct Player* players) {
 short katarenga(SDL_Window* window, SDL_Renderer* renderer, short** board, short** pawns, struct Player* players, short x, short y, short gameState, short turn, short round) {
 
     if (gameState == 0) { // Demande de selection
+        printf("selecting %d %d;\n", x, y);
         if (!selectPawn(pawns, turn, x, y)) { showError("Ceci n'est pas votre pion."); return gameState; }
         // if (!setMoves(board, pawns, turn, x, y, 0, round)) { showError("Ce pion ne peux pas être bougé."); return gameState; }
 
