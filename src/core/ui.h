@@ -11,7 +11,7 @@ void ui_debug() {
 }
 
 void showError(const char *msg) {
-    printf("ERROR: %s", msg);
+    printf("ERROR: %s\n", msg);
 }
 
 #endif

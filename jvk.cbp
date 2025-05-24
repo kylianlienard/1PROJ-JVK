@@ -54,18 +54,14 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/ai/ai.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/ai/congress_ai.h" />
-		<Unit filename="src/ai/isolation_ai.h" />
-		<Unit filename="src/ai/katarenga_ai.h" />
+		<Unit filename="src/ai/ai.h" />
+		<Unit filename="src/ai/ai_congress.h" />
+		<Unit filename="src/ai/ai_isolation.h" />
+		<Unit filename="src/ai/ai_katarenga.h" />
+		<Unit filename="src/core/menu.h" />
 		<Unit filename="src/core/online.h" />
 		<Unit filename="src/core/ui.h" />
-		<Unit filename="src/core/window.h" />
-		<Unit filename="src/game/board.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Unit filename="src/game/board.h" />
 		<Unit filename="src/game/board_ui.h" />
 		<Unit filename="src/game/congress.h" />
 		<Unit filename="src/game/isolation.h" />

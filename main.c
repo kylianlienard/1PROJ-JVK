@@ -9,13 +9,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
-//#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
+#define SDL
 
 #include "./src/core/ui.h"
 #include "./src/core/menu.h"
-//#include "./src/game/board.c"
+#include "./src/game/board.h"
 
-int debug(int argc, char *argv[]) {
+/*int debug(int argc, char *argv[]) {
     printf("Main init\n");
     ui_debug();
     printf("--------------------------\n");
@@ -23,15 +24,14 @@ int debug(int argc, char *argv[]) {
     printf("--------------------------\n");
     board_debug();
     return 0;
-}
+}*/
 
 #define GRID_SIZE 8
 #define CHAR_LENGTH 32
 
-struct Player {
-    char name[20];
-    short value;
-};
+void d(const char *txt) {
+    printf("<%s>\n", txt);
+}
 
 int main(int argc, char* argv[]);
 short click(short x, short y) {}
@@ -40,7 +40,7 @@ short click(short x, short y) {}
 
 int main(int argc, char* argv[]) {
 
-    //- Testing SDL librairies -\\
+    //- Testing SDL librairies -//
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Erreur d'initialisation SDL: %s\n", SDL_GetError());
@@ -64,36 +64,16 @@ int main(int argc, char* argv[]) {
 
     // more tests
 
-    //- Init common values -\\
+    //- Init common values -//
 
     srand(time(NULL));
 
-    struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
-    if (!players) {
-        printf("ALLOC ERROR: players\n");
-        exit(1);
-    }
-
-    for (short plna = 0; plna < 2; plna++) {
-        //printf("Player %d name: ", plna + 1);
-        //scanf("%19s", players[plna].name);
-        players[plna].value = 0;
-    }
-
-    //- Loop -\\
+    //- Loop -//
 
     int running = 1;
-    SDL_Event event;
 
     while (running) {
-        while (SDL_PollEvent(&event)) { // tous event
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                click(event.button.x, event.button.y);
-            }
-            //printf("je suis pollevent ");
-        }
+        running = gameLoop(window, renderer);
     }
 
     SDL_DestroyRenderer(renderer);
