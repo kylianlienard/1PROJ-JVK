@@ -15,14 +15,28 @@
 					<Add option="-g" />
 					<Add directory="C:/SDL2/i686-w64-mingw32/include" />
 					<Add directory="C:/SDL2/SDL2_ttf-devel-2.0.18-mingw/SDL2_ttf-2.0.18/i686-w64-mingw32/include" />
+					<Add directory="C:/SDL2/SDL2_image-2.8.8/i686-w64-mingw32/include" />
+					<Add directory="C:/SDL2/SDL2_mixer-2.8.1/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
+					<Add option="-lws2_32" />
 					<Add library="mingw32" />
 					<Add library="SDL2main" />
 					<Add library="SDL2" />
 					<Add library="SDL2_ttf" />
+					<Add library="libSDL2main.a" />
+					<Add library="libSDL2.a" />
+					<Add library="libSDL2.dll.a" />
+					<Add library="libSDL2_ttf.a" />
+					<Add library="libSDL2_ttf.dll.a" />
+					<Add library="libSDL2_mixer.a" />
+					<Add library="libSDL2_image.a" />
+					<Add library="libSDL2_mixer.dll.a" />
+					<Add library="libSDL2_image.dll.a" />
 					<Add directory="C:/SDL2/i686-w64-mingw32/lib" />
 					<Add directory="C:/SDL2/SDL2_ttf-devel-2.0.18-mingw/SDL2_ttf-2.0.18/i686-w64-mingw32/lib" />
+					<Add directory="C:/SDL2/SDL2_image-2.8.8/i686-w64-mingw32/lib" />
+					<Add directory="C:/SDL2/SDL2_mixer-2.8.1/i686-w64-mingw32/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -41,9 +55,6 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="Untitled1.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -1,59 +1,80 @@
-// Tous les initialiseurs.
+// All inits (SDL window, time), SDL main, window manager
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+//#include <stdlib.h>
+//#include <stdint.h>
 #include <string.h>
 #include <time.h>
 
-/*#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
-#include <stdio.h>*/
+#define SDL
 
-/*#ifndef "./src/core/board.c"
-#include "./src/core/board.c"
-#endif*/
 #include "./src/core/ui.h"
-#include "./src/core/window.h"
+#include "./src/core/menu.h"
+#include "./src/game/board.h"
 
-struct Player {
-    char name[20];
-    short value;
-};
+#define GRID_SIZE 8
+#define CHAR_LENGTH 32
 
-void addValuePlayer(struct Player player) { player.value++; }
-short getValuePlayer(struct Player player) { return player.value; }
-
-#include "./src/game/katarenga.h"
-
-int main() {
-    short c1, c2, c3;
-    srand(time(NULL));
-
-    struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
-    if (!players) {
-        printf("ALLOC ERROR: players\n");
-        exit(1);
-    }
-
-    for (short plna = 0; plna < 2; plna++) {
-        /*printf("Player %d name: ", plna + 1);
-        scanf("%19s", players[plna].name);*/
-        players[plna].value = 0;
-    }
-
-    short** board = init8by8board();
-    short** pawns = init8by8board();
-
-    initBoard(board);
-    katarenga(board, pawns, players);
-
-    return endWindow(players, pawns, board);
+void d(const char *txt) {
+    printf("<%s>\n", txt);
 }
 
-/* void showMainMenu(SDL_Renderer* renderer, int width, int height, TTF_Font* font) {
+int main(int argc, char* argv[]);
+short click(short x, short y) {}
+
+//#include "./src/game/katarenga.h"
+
+int main(int argc, char* argv[]) {
+
+    //- Testing SDL librairies -//
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("ERROR Init SDL: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    SDL_Window* window = SDL_CreateWindow("App", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    if (!window) {
+        printf("ERROR Init Window: %s\n", SDL_GetError());
+        SDL_Quit();
+        return -1;
+    }
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) {
+        printf("ERROR Init Renderer: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    // more tests
+
+    //- Init common values -//
+
+    srand(time(NULL));
+
+    //- Loop -//
+
+    int running = 1;
+
+    while (running) {
+        running = gameLoop(window, renderer);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
+
+// Fonctionne SDL
+ /**void showMainMenu(SDL_Renderer* renderer, int width, int height, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Fond gris clair
     SDL_RenderClear(renderer);
 
@@ -141,4 +162,4 @@ SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN);
     SDL_Quit();
 
     return 0;
-} */
+}**/

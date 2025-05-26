@@ -1554,30 +1554,74 @@
 
 1747214859 c:\users\kylia\onedrive - supinfo\documents\github\testing_sdl\src\game\katarenga.h
 
-1747224656 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\main.c
+1748249223 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\main.c
 	<stdio.h>
-	<stdlib.h>
-	<stdint.h>
 	<string.h>
 	<time.h>
+	<SDL2/SDL.h>
 	<SDL2/SDL_ttf.h>
 	<SDL2/SDL_image.h>
 	<SDL2/SDL_mixer.h>
-	<stdio.h>
-	"./src/core/board.c"
 	"./src/core/ui.h"
-	"./src/core/window.h"
-	"./src/game/katarenga.h"
+	"./src/core/menu.h"
+	"./src/game/board.h"
 
 1747224656 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\board.c
 
-1747224656 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\ui.h
+1748088518 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\ui.h
+	<stdio.h>
+	<SDL2/SDL.h>
 
 1747224656 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\window.h
 
-1747224656 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\katarenga.h
+1748249271 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\katarenga.h
+	"board.c"
+	<stdio.h>
 
-1747209419 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\ai\ai.c
+1747225103 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\ai\ai.c
 
 1747224656 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\board.c
+
+1747224652 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\main.c
+	<stdio.h>
+	<SDL2/SDL.h>
+
+1747832652 source:c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\board.c
+	"board_ui.h"
+	"katarenga.h"
+	"../ai/ai.h"
+	"../ai/ai_katarenga.h"
+
+1747832652 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\board.c
+	"board_ui.h"
+	"katarenga.h"
+	"../ai/ai.h"
+	"../ai/ai_katarenga.h"
+
+1748242243 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\board_ui.h
+	"board.h"
+	<SDL2/SDL.h>
+
+1747817787 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\menu.h
+	"ui.h"
+	"online.h"
+	<stdio.h>
+	<SDL2/SDL.h>
+
+1747815735 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\core\online.h
+
+1747817958 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\ai\ai.h
+	"board.c"
+	<stdio.h>
+
+1747817953 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\ai\ai_katarenga.h
+	"../game/board.c"
+	"../game/katarenga.h"
+	"ai.h"
+
+1748249245 c:\users\kylia\onedrive - supinfo\documents\github\1proj-jvk\src\game\board.h
+	"board_ui.h"
+	"../ai/ai.h"
+	"katarenga.h"
+	"../ai/ai_katarenga.h"
 
