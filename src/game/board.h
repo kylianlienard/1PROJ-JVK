@@ -14,6 +14,10 @@
 short selectPawn(short** pawns, short turn, short x, short y);
 short canMove(short** pawns, short x, short y);
 int gameLoop(SDL_Window*, SDL_Renderer*);
+short switchTurn(short turn);
+short getSingleCoord(short clickXY, short coord);
+short setMoves(short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn);
+
 unsigned short randint(short maxi) { return rand() % maxi; }
 unsigned short rand8() { return rand() % 8; }
 
@@ -25,19 +29,7 @@ unsigned short rand8() { return rand() % 8; }
 #include "../ai/ai_katarenga.h"
 #endif*/
 
-/*void board_debug() {
-    d("Board\n");
-    board_ui_debug();
-    ai_debug();
-    katarenga_debug();
-    ai_katarenga_debug();
-}*/
-
-void board_use() {
-    d("Board used\n");
-}
-
-//- Constants -\\
+//- Constants -//
 
 const short RED_DIRS[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
 const short BLUE_DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
@@ -49,7 +41,7 @@ struct Player { // temp
     short value;
 };
 
-//- Board generation -\\
+//- Board generation -//
 
 short** init8by8board() {
     short** eight = (short**)malloc(8 * sizeof(short*));
@@ -173,7 +165,11 @@ void generateBoard(short** board) {
     free(quad);
 }
 
-//- Game functions -\\
+//- Game functions -//
+
+short getSingleCoord(short clickXY, short coord) {
+    return coord ? (clickXY - (clickXY % 10)) / 10 : clickXY % 10;
+}
 
 short correctCoord(short x, short y) {
     return 0 <= x && x < 8 && 0 <= y && y < 8;
@@ -183,22 +179,26 @@ short selectPawn(short** pawns, short turn, short x, short y) { // Erreurs + spe
     return pawns[x][y] == turn + 1;
 }
 
-short canMove(short** pawns, short x, short y) { return pawns[x][y] > 2; };
+short canMove(short** pawns, short x, short y) {
+    return pawns[x][y] > 2;
+}
 
 void setMovable(short** pawns, short x, short y) {
     pawns[x][y] += 3;
     // update GUI
 }
 
-short canPlace(short** pawns, short turn, short x, short y, short round) {
-    if (pawns[x][y] == 0) { return 1; }
-    if (pawns[x][y] == 1 - (turn + 1) && round > 1) { return 1; }
-    return 0;
+short canPlace(short** pawns, short turn, short x, short y, short canEat) {
+    return (pawns[x][y] == 0) || (canEat && pawns[x][y] == 1 - (turn + 1));
 }
 
-short setMoves(short** board, short** pawns, short turn, short x, short y, short directReturn, short round) { /// sera commun SANS LE ROUND
-    short cell = board[x][y];
+short switchTurn(short turn) {
+    return 1 - turn;
+}
+
+short setMoves(short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn) { /// sera commun SANS LE ROUND
     short i, j, cox, coy;
+    printf(">>value caneat: %d\n", canEat);
 
     if (cell == 1) { // bleu
         for (i = -1; i <= 1; i++) {
@@ -206,7 +206,7 @@ short setMoves(short** board, short** pawns, short turn, short x, short y, short
                 if (i == 0 && j == 0) continue;
                 cox = x + i;
                 coy = y + j;
-                if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, round)) {
+                if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, canEat)) {
                     if (directReturn) return 1;
                     setMovable(pawns, cox, coy);
                 }
@@ -222,7 +222,7 @@ short setMoves(short** board, short** pawns, short turn, short x, short y, short
         for (i = 0; i < 8; i++) {
             cox = x + moves[i][0];
             coy = y + moves[i][1];
-            if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, round)) {
+            if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, canEat)) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
             }
@@ -253,10 +253,11 @@ short setMoves(short** board, short** pawns, short turn, short x, short y, short
                 cox += moves[i][0];
                 coy += moves[i][1];
             }
-
-            if (correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1) {
-                if (directReturn) return 1;
-                setMovable(pawns, cox, coy);
+            if (canEat) {
+                if (correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1) {
+                    if (directReturn) return 1;
+                    setMovable(pawns, cox, coy);
+                }
             }
         }
         return 1;
@@ -280,12 +281,12 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     SDL_Event event;
     short redraw = 0;
     short playingGame = 0; // which game
-    short gameState = 0; // 0 rien, 1 un pion est select, -1 si fin. ne change pas si isolation
-    short prevGameState = 0;
+    short gameValue = -1; // 0 rien, 1 un pion est select, -2 si fin, -1 si joeuru rejoue
+    short prevGameValue = -1; // Si vide, donc coup d'avant pas enregistré
     short turn = 0;
     short round = 0;
     short sWE = getShortestWindowEdge(window);
-    short clickXY = 0;
+    short gridXY = 0;
 
     struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
     if (!players) {
@@ -308,7 +309,7 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     case 0:
         setKatarengaPawns(pawns); break;
     }
-    drawBoard(renderer, board, sWE);
+    drawBoard(renderer, board, pawns, sWE);
     SDL_RenderPresent(renderer);
 
     while (1) {
@@ -317,38 +318,60 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
             case SDL_QUIT:
                 return 0;
             case SDL_WINDOWEVENT:
-                d("Window resized");
+                //d("Window resized");
                 sWE = getShortestWindowEdge(window);
                 redraw = 1;
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                clickXY = gridClick(event.button.x, event.button.y, sWE);
+                gridXY = gridClick(event.button.x, event.button.y, sWE);
 
-                if (clickXY != -1) { // si le click est dans le tableau
-                    printf("board clicked in %d;%d\n", clickXY % 10, (clickXY - clickXY % 10) / 10);
+                if (gridXY != -1) { // si le click est dans le tableau
+
+                    if (gridXY == prevGameValue) {//moves to same spot -> unselects
+                        d("Pawn deselected");
+                        clearMovable(pawns);
+                        prevGameValue = -1;
+                        continue;
+                    }
 
                     if (playingGame == 0) {
-                        gameState = katarenga(window, renderer, board, pawns, players, clickXY % 10, (clickXY - clickXY % 10) / 10, gameState, turn, round);
+                        gameValue = katarenga(window, renderer, board, pawns, players, gridXY, gameValue, prevGameValue, turn, round);
                     } else if (playingGame == 1) {
                         d("Conge");
                     } else {
                         d("L'islation chez les jeunes, 110%");
                     }
 
-                    if (prevGameState == gameState) { // le joeuur a mal joué
+                    if (gameValue == -2) {
+                        printf("Winner is player %d!\n", turn + 1);
+                        return;
+                    } else if (gameValue == -1) { // le joeuur a mal joué
+                        gameValue = 0;
                         continue;
                     }
 
-                    d("Next round\n");
-
-                    if (gameState == -1) {
-                        printf("Winner is player %d!\n", turn + 1);
+                    if (prevGameValue == -1) {
+                        prevGameValue = gameValue > 0 ? gameValue : 0;
+                        gameValue = 0;
+                    } else {
+                        prevGameValue = -1;
+                        if (gameValue == 0) {
+                            turn = switchTurn(turn);
+                            printf("Player %d's turn", turn + 1);
+                            if (!turn) { round++; d("NEW ROUND");}
+                        }
                     }
+                    /*printf(">afte rbreak: %d and %d\n", gameValue, prevGameValue);
 
-                    //drawBoard(renderer, board, sWE);
+                    prevGameValue = gameValue;
+                    if (gameValue == 0) {
 
-                    printf("Player %d's turn", turn + 1);
+                    } else {
+                        display2Boards(board, pawns);
+                    }*/
+
                 } else {
+                    printf("What to do %d;%d\n", event.button.x, event.button.y);
                 }
                 redraw = 1;
                 break;
@@ -358,16 +381,17 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
 
 
         if (redraw) { // Only redraws when not a mouse move
+            d("redrawn");
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderClear(renderer);
 
-            drawBoard(renderer, board, sWE);
+            drawBoard(renderer, board, pawns, sWE);
             //drawPawns()
             //drawUI()
 
             redraw = 0;
             SDL_RenderPresent(renderer);
-            display2Boards(board, pawns); //temp
+            //display2Boards(board, pawns); //temp
         }
 
 

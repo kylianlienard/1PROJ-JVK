@@ -16,16 +16,6 @@
 #include "./src/core/menu.h"
 #include "./src/game/board.h"
 
-/*int debug(int argc, char *argv[]) {
-    printf("Main init\n");
-    ui_debug();
-    printf("--------------------------\n");
-    menu_debug();
-    printf("--------------------------\n");
-    board_debug();
-    return 0;
-}*/
-
 #define GRID_SIZE 8
 #define CHAR_LENGTH 32
 

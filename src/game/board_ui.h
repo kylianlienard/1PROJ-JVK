@@ -11,11 +11,6 @@
 #include <SDL2/SDL.h>
 #endif
 
-void board_ui_debug() {
-    printf("UI\n");
-    board_use();
-}
-
 //- TEMP AVANT GUI -//
 
 char symbl(short value, short boardTab) {
@@ -61,32 +56,51 @@ void display2Boards(short** board, short** pawns) { /// sera commun
 
 
 
-void drawBoard(SDL_Renderer* renderer, short** board, short sWE) {
-
+void drawBoard(SDL_Renderer* renderer, short** board, short** pawns, short sWE) {
+    short y, x;
     int cellSize = sWE / 8;
-    printf("the cell size %d\n", cellSize);
+    int pawnMargin = cellSize / 8;
+    int pawnSize = cellSize - (2 * pawnMargin);
 
-    d("Drawing grid");
-
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
+    for (y = 0; y < 8; y++) {
+        for (x = 0; x < 8; x++) {
             switch (board[y][x]) {
-                case 0:
-                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Rouge
-                    break;
-                case 1:
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Bleu
-                    break;
-                case 2:
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Jaune
-                    break;
-                case 3:
-                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Vert
-                    break;
-                default: SDL_SetRenderDrawColor(renderer, 0, 90, 90, 90); break;
+            case 0:
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Rouge
+                break;
+            case 1:
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Bleu
+                break;
+            case 2:
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Jaune
+                break;
+            case 3:
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Vert
+                break;
+            default:
+                SDL_SetRenderDrawColor(renderer, 0, 90, 90, 90); // Default
+                break;
             }
+
             SDL_Rect cell = {x * cellSize, y * cellSize, cellSize, cellSize};
             SDL_RenderFillRect(renderer, &cell);
+
+            if (pawns[y][x] >= 3) {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+                SDL_Rect playable = {x * cellSize + pawnMargin, y * cellSize + pawnMargin, pawnSize, pawnSize};
+                SDL_RenderFillRect(renderer, &playable);
+            }
+
+            if (pawns[y][x] == 1 || pawns[y][x] == 2) {
+                if (pawns[y][x] == 1) {
+                    SDL_SetRenderDrawColor(renderer, 237, 214, 176, 255);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, 184, 135, 98, 255);
+                }
+
+                SDL_Rect pawnRect = {x * cellSize + pawnMargin, y * cellSize + pawnMargin, pawnSize, pawnSize};
+                SDL_RenderFillRect(renderer, &pawnRect);
+            }
         }
     }
 }
