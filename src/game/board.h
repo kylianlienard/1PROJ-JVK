@@ -16,7 +16,7 @@ short canMove(short** pawns, short x, short y);
 int gameLoop(SDL_Window*, SDL_Renderer*);
 short switchTurn(short turn);
 short getSingleCoord(short clickXY, short coord);
-short setMoves(short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn);
+short setMoves(short** board, short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn);
 
 unsigned short randint(short maxi) { return rand() % maxi; }
 unsigned short rand8() { return rand() % 8; }
@@ -189,16 +189,16 @@ void setMovable(short** pawns, short x, short y) {
 }
 
 short canPlace(short** pawns, short turn, short x, short y, short canEat) {
-    return (pawns[x][y] == 0) || (canEat && pawns[x][y] == 1 - (turn + 1));
+    return (pawns[x][y] == 0) || (canEat && pawns[x][y] == (1 - turn) + 1);
 }
 
 short switchTurn(short turn) {
     return 1 - turn;
 }
 
-short setMoves(short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn) { /// sera commun SANS LE ROUND
+short setMoves(short** board, short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn) { /// sera commun SANS LE ROUND
     short i, j, cox, coy;
-    printf(">>value caneat: %d\n", canEat);
+    printf(">>>>canEat: %d\n", canEat);
 
     if (cell == 1) { // bleu
         for (i = -1; i <= 1; i++) {
@@ -206,6 +206,9 @@ short setMoves(short** pawns, short turn, short cell, short x, short y, short ca
                 if (i == 0 && j == 0) continue;
                 cox = x + i;
                 coy = y + j;
+                if (correctCoord(cox, coy)) {
+                    printf("this coorrect? %d", canPlace(pawns, turn, cox, coy, canEat));
+                }
                 if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, canEat)) {
                     if (directReturn) return 1;
                     setMovable(pawns, cox, coy);
@@ -222,6 +225,9 @@ short setMoves(short** pawns, short turn, short cell, short x, short y, short ca
         for (i = 0; i < 8; i++) {
             cox = x + moves[i][0];
             coy = y + moves[i][1];
+            if (correctCoord(cox, coy)) {
+                    printf("this coorrect pawn? %d", canPlace(pawns, turn, cox, coy, canEat));
+                }
             if (correctCoord(cox, coy) && canPlace(pawns, turn, cox, coy, canEat)) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
@@ -247,17 +253,15 @@ short setMoves(short** pawns, short turn, short cell, short x, short y, short ca
         for (i = 0; i < 4; i++) {
             cox = x + moves[i][0];
             coy = y + moves[i][1];
-            while (correctCoord(cox, coy) && pawns[cox][coy] == 0) {
+            while (correctCoord(cox, coy) && !(board[cox][coy] == cell) && pawns[cox][coy] == 0) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
                 cox += moves[i][0];
                 coy += moves[i][1];
             }
-            if (canEat) {
-                if (correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1) {
-                    if (directReturn) return 1;
-                    setMovable(pawns, cox, coy);
-                }
+            if ((correctCoord(cox, coy) && board[cox][coy] == cell) || (canEat && correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1)) {
+                if (directReturn) return 1;
+                setMovable(pawns, cox, coy);
             }
         }
         return 1;
@@ -318,7 +322,6 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
             case SDL_QUIT:
                 return 0;
             case SDL_WINDOWEVENT:
-                //d("Window resized");
                 sWE = getShortestWindowEdge(window);
                 redraw = 1;
                 break;
@@ -328,7 +331,6 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
                 if (gridXY != -1) { // si le click est dans le tableau
 
                     if (gridXY == prevGameValue) {//moves to same spot -> unselects
-                        d("Pawn deselected");
                         clearMovable(pawns);
                         prevGameValue = -1;
                         continue;
@@ -361,15 +363,6 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
                             if (!turn) { round++; d("NEW ROUND");}
                         }
                     }
-                    /*printf(">afte rbreak: %d and %d\n", gameValue, prevGameValue);
-
-                    prevGameValue = gameValue;
-                    if (gameValue == 0) {
-
-                    } else {
-                        display2Boards(board, pawns);
-                    }*/
-
                 } else {
                     printf("What to do %d;%d\n", event.button.x, event.button.y);
                 }
@@ -386,12 +379,10 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
             SDL_RenderClear(renderer);
 
             drawBoard(renderer, board, pawns, sWE);
-            //drawPawns()
             //drawUI()
 
             redraw = 0;
             SDL_RenderPresent(renderer);
-            //display2Boards(board, pawns); //temp
         }
 
 

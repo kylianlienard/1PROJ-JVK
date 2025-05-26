@@ -37,7 +37,7 @@ short katarengaEnd(short** board, short** pawns, short turn, struct Player* play
 
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            if (pawns[i][j] == oppPiece && setMoves(pawns, turn, board[i][j], i, j, 1, 1)) { // 1 est par logique, on ne perd pas le premier tour, peut causer des problèmes
+            if (pawns[i][j] == oppPiece && setMoves(board, pawns, turn, board[i][j], i, j, 1, 1)) { // 1 est par logique, on ne perd pas le premier tour, peut causer des problèmes
                 if (++nbOppPiece > 1) return 0;
             }
         }
@@ -52,9 +52,9 @@ short katarenga(SDL_Window* window, SDL_Renderer* renderer, short** board, short
      short y = getSingleCoord(gridXY, 1);
 
     if (prevGridXY == -1) { // Demande de selection
-        printf(">selecting: %d;%d\n", x, y);
+        printf(">Selecting: %d;%d\n", x, y);
         if (!selectPawn(pawns, turn, x, y)) { showError("This is not your pawn."); return -1; }
-        if (!setMoves(pawns, turn, board[x][y], x, y, round > 0, 0)) { showError("This pawn cannot move."); return -1; }
+        if (!setMoves(board, pawns, turn, board[x][y], x, y, round > 0, 0)) { showError("This pawn cannot move."); return -1; }
         display2Boards(board, pawns);
         return gridXY;
     } else { //demande de mouvement, camp sera verif si clic
@@ -62,7 +62,7 @@ short katarenga(SDL_Window* window, SDL_Renderer* renderer, short** board, short
         short pawnX = getSingleCoord(prevGridXY, 0);
         short pawnY = getSingleCoord(prevGridXY, 1);
         if (!canMove(pawns, x, y)) { showError("Your selected pawn cannot move here."); return -1; };
-        printf(">moving: %d;%d to %d;%d\n", pawnX, pawnY, x, y);
+        printf(">Moving: %d;%d to %d;%d\n", pawnX, pawnY, x, y);
         clearMovable(pawns);
         pawns[pawnX][pawnY] = 0;
         pawns[x][y] = turn + 1;

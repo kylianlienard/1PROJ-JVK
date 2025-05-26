@@ -33,20 +33,20 @@ int main(int argc, char* argv[]) {
     //- Testing SDL librairies -//
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("Erreur d'initialisation SDL: %s\n", SDL_GetError());
+        printf("ERROR Init SDL: %s\n", SDL_GetError());
         return -1;
     }
 
     SDL_Window* window = SDL_CreateWindow("App", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window) {
-        printf("Erreur de creation de fenetre: %s\n", SDL_GetError());
+        printf("ERROR Init Window: %s\n", SDL_GetError());
         SDL_Quit();
         return -1;
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        printf("Erreur de creation de renderer: %s\n", SDL_GetError());
+        printf("ERROR Init Renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return -1;
