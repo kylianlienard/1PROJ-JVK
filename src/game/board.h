@@ -286,23 +286,13 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     short redraw = 0;
     short playingGame = 0; // which game
     short gameValue = -1; // 0 rien, 1 un pion est select, -2 si fin, -1 si joeuru rejoue
-    short prevGameValue = -1; // Si vide, donc coup d'avant pas enregistré
+    short prevGameValue = -1; // Si vide, donc coup d'avant pas enregistrï¿½
     short turn = 0;
     short round = 0;
     short sWE = getShortestWindowEdge(window);
     short gridXY = 0;
 
-    struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
-    if (!players) {
-        printf("ALLOC ERROR: players\n");
-        exit(1);
-    }
-
-    for (short plna = 0; plna < 2; plna++) {
-        /*printf("Player %d name: ", plna + 1);
-        scanf("%32s", players[plna].name);*/
-        players[plna].value = 0;
-    }
+    
 
     short** board = init8by8board();
     short** pawns = init8by8board();
@@ -347,7 +337,7 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
                     if (gameValue == -2) {
                         printf("Winner is player %d!\n", turn + 1);
                         return;
-                    } else if (gameValue == -1) { // le joeuur a mal joué
+                    } else if (gameValue == -1) { // le joeuur a mal jouï¿½
                         gameValue = 0;
                         continue;
                     }

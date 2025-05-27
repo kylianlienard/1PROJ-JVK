@@ -26,11 +26,24 @@ void d(const char *txt) {
 int main(int argc, char* argv[]);
 short click(short x, short y) {}
 
+struct Run {
+    int run;
+    char player1;
+    char player2;
+    int game;
+};
+
 //#include "./src/game/katarenga.h"
 
 int main(int argc, char* argv[]) {
 
     //- Testing SDL librairies -//
+    WSADATA wsaData;
+    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if(iResult != 0) {
+        printf("WSAStartup failed: %d\n", iResult);
+        return -1;
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("ERROR Init SDL: %s\n", SDL_GetError());
@@ -41,6 +54,7 @@ int main(int argc, char* argv[]) {
     if (!window) {
         printf("ERROR Init Window: %s\n", SDL_GetError());
         SDL_Quit();
+        WSACleanup();
         return -1;
     }
 
@@ -49,7 +63,17 @@ int main(int argc, char* argv[]) {
         printf("ERROR Init Renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
+        WSACleanup();
         return -1;
+    }
+
+    TTF_Font* font = TTF_OpenFont("arial.ttf", 24);
+    if (!font) {
+        printf("Erreur lors du chargement de la police: %s\n", TTF_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        WSACleanup();
     }
 
     // more tests
@@ -60,10 +84,25 @@ int main(int argc, char* argv[]) {
 
     //- Loop -//
 
-    int running = 1;
+    struct Run run;
+    run.run = 1;
 
-    while (running) {
-        running = gameLoop(window, renderer);
+    while (run.run){
+        run = menu(window, renderer, font);
+
+        struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
+        if (!players) {
+            printf("ALLOC ERROR: players\n");
+            exit(1);
+        }
+
+        for (short plna = 0; plna < 2; plna++) {
+            /*printf("Player %d name: ", plna + 1);
+            scanf("%32s", players[plna].name);*/
+            players[plna].value = 0;
+        }
+        
+        gameLoop(window, renderer);
     }
 
     SDL_DestroyRenderer(renderer);
@@ -141,9 +180,9 @@ SDL_WINDOWPOS_CENTERED, 400, 400, SDL_WINDOW_SHOWN);
                 int mouseX = event.button.x;
                 int mouseY = event.button.y;
 
-                // Vérifie si le clic est dans le bouton
+                // Vï¿½rifie si le clic est dans le bouton
                 if (mouseX > 100 && mouseX < 300 && mouseY > 133 && mouseY < 266) {
-                    printf("Bouton cliqué ! Lancement de la grille...\n");
+                    printf("Bouton cliquï¿½ ! Lancement de la grille...\n");
                     // Ici, tu peux appeler ta fonction principale pour la grille
                 }
             }
