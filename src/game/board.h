@@ -11,15 +11,18 @@
 #include "../ai/ai.h"
 #endif
 
-short selectPawn(short** pawns, short turn, short x, short y);
-short canMove(short** pawns, short x, short y);
-int gameLoop(SDL_Window*, SDL_Renderer*);
-short switchTurn(short turn);
-short getSingleCoord(short clickXY, short coord);
-short setMoves(short** board, short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn);
+struct Player;
+int selectPawn(int** pawns, int turn, int x, int y);
+int canMove(int** pawns, int x, int y);
+int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players);
+int switchTurn(int turn);
+int getSingleCoord(int clickXY, int coord);
+int setMoves(int** board, int** pawns, int turn, int cell, int x, int y, int canEat, int directReturn);
+int canCamp(int turn, int x);
+//int campClick(int x, int y, int sWE);
 
-unsigned short randint(short maxi) { return rand() % maxi; }
-unsigned short rand8() { return rand() % 8; }
+unsigned int randint(int maxi) { return rand() % maxi; }
+unsigned int rand8() { return rand() % 8; }
 
 #ifndef fileKATARENGA
 #include "katarenga.h"
@@ -31,38 +34,33 @@ unsigned short rand8() { return rand() % 8; }
 
 //- Constants -//
 
-const short RED_DIRS[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
-const short BLUE_DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
-const short GREEN_DIRS[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
-const short YELLOW_DIRS[8][2] = {{-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}, {1, -2}, {2, -1}, {2, 1}, {1, 2}};
-
-struct Player { // temp
-    char name[20];
-    short value;
-};
+/*const int RED_DIRS[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
+const int BLUE_DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+const int GREEN_DIRS[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+const int YELLOW_DIRS[8][2] = {{-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}, {1, -2}, {2, -1}, {2, 1}, {1, 2}};*/
 
 //- Board generation -//
 
-short** init8by8board() {
-    short** eight = (short**)malloc(8 * sizeof(short*));
+int** init8by8board() {
+    int** eight = (int**)malloc(8 * sizeof(int*));
     if (!eight) {
         d("ALLOC ERROR: eight\n");
         exit(1);
     }
 
     for (int i = 0; i < 8; i++) {
-        eight[i] = (short*)malloc(8 * sizeof(short));
+        eight[i] = (int*)malloc(8 * sizeof(int));
         if (!eight[i]) {
             d("ALLOC ERROR: eight[i]\n");
 
-            for (short j = 0; j < i; j++) {
+            for (int j = 0; j < i; j++) {
                 free(eight[j]);
             }
             free(eight);
             exit(1);
         }
 
-        for (short j = 0; j < 8; j++) {
+        for (int j = 0; j < 8; j++) {
             eight[i][j] = 0;
         }
     }
@@ -70,8 +68,8 @@ short** init8by8board() {
     return eight;
 };
 
-void shuffle(short *arr, short length) {
-    short i, j, tmp;
+void shuffle(int *arr, int length) {
+    int i, j, tmp;
     for (i = length - 1; i > 0; i--) {
         j = randint(i);
         tmp = arr[i];
@@ -80,20 +78,20 @@ void shuffle(short *arr, short length) {
     }
 }
 
-void flipArray(short** arr) {
-    for (short i = 0; i < 4; i++) {
-        for (short j = 0; j < 2; j++) {
-            short tmp = arr[i][j];
+void flipArray(int** arr) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 2; j++) {
+            int tmp = arr[i][j];
             arr[i][j] = arr[i][3-j];
             arr[i][3-j] = tmp;
         }
     }
 }
 
-void rotateArray90(short** arr) {
-    for (short i = 0; i < 2; i++) {
-        for (short j = i; j < 3 - i; j++) {
-            short tmp = arr[i][j];
+void rotateArray90(int** arr) {
+    for (int i = 0; i < 2; i++) {
+        for (int j = i; j < 3 - i; j++) {
+            int tmp = arr[i][j];
             arr[i][j] = arr[3-j][i];
             arr[3-j][i] = arr[3-i][3-j];
             arr[3-i][3-j] = arr[j][3-i];
@@ -102,15 +100,15 @@ void rotateArray90(short** arr) {
     }
 }
 
-void generateBoard(short** board) {
-    const short quadrants[4][4][4] = {
+void generateBoard(int** board) {
+    const int quadrants[4][4][4] = {
         {{2, 1, 3, 0}, {0, 3, 2, 2}, {3, 0, 1, 1}, {1, 2, 0, 3}},
         {{3, 1, 2, 0}, {0, 1, 2, 3}, {2, 0, 3, 1}, {1, 3, 0, 2}},
         {{3, 1, 0, 2}, {1, 3, 1, 0}, {2, 0, 2, 3}, {0, 3, 2, 1}},
         {{2, 1, 3, 0}, {0, 1, 2, 2}, {1, 3, 0, 3}, {3, 0, 2, 1}}
     };
 
-    short** quad = (short**)malloc(4 * sizeof(short*));
+    int** quad = (int**)malloc(4 * sizeof(int*));
 
     if (!quad) {
         d("ALLOC ERROR: quad\n");
@@ -118,11 +116,11 @@ void generateBoard(short** board) {
     }
 
     for (int i = 0; i < 4; i++) {
-        quad[i] = (short*)malloc(4 * sizeof(short));
+        quad[i] = (int*)malloc(4 * sizeof(int));
         if (!quad[i]) {
             d("ALLOC ERROR: quad[i]\n");
 
-            for (short j = 0; j < i; j++) {
+            for (int j = 0; j < i; j++) {
                 free(quad[j]);
             }
             free(quad);
@@ -130,13 +128,13 @@ void generateBoard(short** board) {
         }
     }
 
-    short right, bottom;
-    short indexes[4] = {0, 1, 2, 3};
+    int right, bottom;
+    int indexes[4] = {0, 1, 2, 3};
     shuffle(indexes, 4);
 
-    for (short i = 0; i < 4; i++) {
-        for (short x = 0; x < 4; x++) {
-            for (short y = 0; y < 4; y++) {
+    for (int i = 0; i < 4; i++) {
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
                 quad[x][y] = quadrants[indexes[i]][x][y];
             }
         }
@@ -145,15 +143,15 @@ void generateBoard(short** board) {
             flipArray(quad);
         }
 
-        for (short r = 0; r < randint(3); r++) {
+        for (int r = 0; r < randint(3); r++) {
             rotateArray90(quad);
         }
 
         right = (i > 1) ? 4 : 0;
         bottom = (i % 2 == 1) ? 4 : 0;
 
-        for (short x = 0; x < 4; x++) {
-            for (short y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
                 board[x + right][y + bottom] = quad[x][y];
             }
         }
@@ -167,37 +165,37 @@ void generateBoard(short** board) {
 
 //- Game functions -//
 
-short getSingleCoord(short clickXY, short coord) {
+int getSingleCoord(int clickXY, int coord) {
     return coord ? (clickXY - (clickXY % 10)) / 10 : clickXY % 10;
 }
 
-short correctCoord(short x, short y) {
+int correctCoord(int x, int y) {
     return 0 <= x && x < 8 && 0 <= y && y < 8;
 }
 
-short selectPawn(short** pawns, short turn, short x, short y) { // Erreurs + specifiques
+int selectPawn(int** pawns, int turn, int x, int y) { // Erreurs + specifiques
     return pawns[x][y] == turn + 1;
 }
 
-short canMove(short** pawns, short x, short y) {
+int canMove(int** pawns, int x, int y) {
     return pawns[x][y] > 2;
 }
 
-void setMovable(short** pawns, short x, short y) {
+void setMovable(int** pawns, int x, int y) {
     pawns[x][y] += 3;
     // update GUI
 }
 
-short canPlace(short** pawns, short turn, short x, short y, short canEat) {
+int canPlace(int** pawns, int turn, int x, int y, int canEat) {
     return (pawns[x][y] == 0) || (canEat && pawns[x][y] == (1 - turn) + 1);
 }
 
-short switchTurn(short turn) {
+int switchTurn(int turn) {
     return 1 - turn;
 }
 
-short setMoves(short** board, short** pawns, short turn, short cell, short x, short y, short canEat, short directReturn) { /// sera commun SANS LE ROUND
-    short i, j, cox, coy;
+int setMoves(int** board, int** pawns, int turn, int cell, int x, int y, int canEat, int directReturn) { /// sera commun SANS LE ROUND
+    int i, j, cox, coy;
     printf(">>>>canEat: %d\n", canEat);
 
     if (cell == 1) { // bleu
@@ -217,7 +215,7 @@ short setMoves(short** board, short** pawns, short turn, short cell, short x, sh
         }
         return 1;
     } else if (cell == 3) {
-        short moves[8][2] = {
+        int moves[8][2] = {
             {-1, -2}, {-2, -1}, {-2, 1}, {-1, 2},
             {1, -2}, {2, -1}, {2, 1}, {1, 2}
         };
@@ -235,15 +233,15 @@ short setMoves(short** board, short** pawns, short turn, short cell, short x, sh
         }
         return 1;
     } else {
-        short moves[4][2];
+        int moves[4][2];
         if (cell == 0) { // red
-            short redMoves[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
+            int redMoves[4][2] = {{0, -1}, {-1, 0}, {0, 1}, {1, 0}};
             for (i = 0; i < 4; i++) {
                 moves[i][0] = redMoves[i][0];
                 moves[i][1] = redMoves[i][1];
             }
         } else { // yellow
-            short yellowMoves[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+            int yellowMoves[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
             for (i = 0; i < 4; i++) {
                 moves[i][0] = yellowMoves[i][0];
                 moves[i][1] = yellowMoves[i][1];
@@ -270,8 +268,8 @@ short setMoves(short** board, short** pawns, short turn, short cell, short x, sh
     return 0;
 }
 
-void clearMovable(short** pawns) {
-    short i, j;
+void clearMovable(int** pawns) {
+    int i, j;
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
             if (pawns[i][j] > 2) {
@@ -281,21 +279,44 @@ void clearMovable(short** pawns) {
     }
 }
 
-int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
+void redrawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    drawBoard(renderer, board, pawns, sWE);
+    //drawUI()
+
+    SDL_RenderPresent(renderer);
+    d("redrawn");
+}
+
+// Block quand c'est mon tour, gerer IA
+int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players) { //0 local, 1 IA, 2 network
     SDL_Event event;
-    short redraw = 0;
-    short playingGame = 0; // which game
-    short gameValue = -1; // 0 rien, 1 un pion est select, -2 si fin, -1 si joeuru rejoue
-    short prevGameValue = -1; // Si vide, donc coup d'avant pas enregistrï¿½
-    short turn = 0;
-    short round = 0;
-    short sWE = getShortestWindowEdge(window);
-    short gridXY = 0;
+    int gameValue = -1; // 0 rien, 1 un pion est select, -2 si fin, -1 si joeuru rejoue
+    int prevGameValue = -1; // Si vide, donc coup d'avant pas enregistré
+    int turn = 0; // Current game turn
+    int yourTurn = 0; // The player's turn
+    int round = 0;
+    int sWE = getShortestWindowEdge(window);
+    int gridXY = -1;
 
-    
+    // Une methode qui connaître qui joue actuellement
 
-    short** board = init8by8board();
-    short** pawns = init8by8board();
+    /*struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
+    if (!players) {
+        printf("ALLOC ERROR: players\n");
+        exit(1);
+    }
+
+    for (int plna = 0; plna < 2; plna++) {
+        printf("Player %d name: ", plna + 1);
+        scanf("%32s", players[plna].name);
+        players[plna].value = 0;
+    }*/
+
+    int** board = init8by8board();
+    int** pawns = init8by8board();
 
     generateBoard(board);
 
@@ -303,6 +324,7 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
     case 0:
         setKatarengaPawns(pawns); break;
     }
+
     drawBoard(renderer, board, pawns, sWE);
     SDL_RenderPresent(renderer);
 
@@ -310,19 +332,24 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
         while (SDL_PollEvent(&event)) { // bouge souris
             switch(event.type){
             case SDL_QUIT:
+                //Disconnect si online
                 return 0;
             case SDL_WINDOWEVENT:
                 sWE = getShortestWindowEdge(window);
-                redraw = 1;
+                redrawBoard(renderer, board, pawns, sWE);
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                gridXY = gridClick(event.button.x, event.button.y, sWE);
+                if (turn == yourTurn) {
+                    gridXY = gridClick(event.button.x, event.button.y, sWE);
+                }
 
                 if (gridXY != -1) { // si le click est dans le tableau
 
                     if (gridXY == prevGameValue) {//moves to same spot -> unselects
                         clearMovable(pawns);
                         prevGameValue = -1;
+                        d("Deselected");
+                        redrawBoard(renderer, board, pawns, sWE);
                         continue;
                     }
 
@@ -336,8 +363,8 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
 
                     if (gameValue == -2) {
                         printf("Winner is player %d!\n", turn + 1);
-                        return;
-                    } else if (gameValue == -1) { // le joeuur a mal jouï¿½
+                        return 1;
+                    } else if (gameValue == -1) { // le joeuur a mal joué
                         gameValue = 0;
                         continue;
                     }
@@ -350,32 +377,21 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer) {
                         if (gameValue == 0) {
                             turn = switchTurn(turn);
                             printf("Player %d's turn", turn + 1);
+                            gridXY = -1;
                             if (!turn) { round++; d("NEW ROUND");}
                         }
                     }
-                } else {
+                } else if (turn == yourTurn && playingGame == 0 && canCamp(turn, getSingleCoord(prevGameValue, 0))) { //campClick(event.button.x, event.button.y, sWE)
+                    d("I CAN CAMP YOU NIG");
+                }
+
+                else {
                     printf("What to do %d;%d\n", event.button.x, event.button.y);
                 }
-                redraw = 1;
+                redrawBoard(renderer, board, pawns, sWE);
                 break;
             }
         }
-
-
-
-        if (redraw) { // Only redraws when not a mouse move
-            d("redrawn");
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            SDL_RenderClear(renderer);
-
-            drawBoard(renderer, board, pawns, sWE);
-            //drawUI()
-
-            redraw = 0;
-            SDL_RenderPresent(renderer);
-        }
-
-
     }
 
     return 0; // 1 pour continuer a run

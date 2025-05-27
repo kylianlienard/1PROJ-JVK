@@ -19,6 +19,7 @@
 					<Add directory="C:/SDL2old/SDL2_mixer-2.8.1/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
+					<Add option="-lws2_32" />
 					<Add library="libmingw32.a" />
 					<Add library="libSDL2main.a" />
 					<Add library="libSDL2.a" />
@@ -51,6 +52,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="arial.ttf" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

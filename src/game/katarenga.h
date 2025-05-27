@@ -8,32 +8,32 @@
 
 struct Player { // temp
     char name[20];
-    short value;
+    int value;
 };
 #endif
 
 #include <stdio.h>
 
-void setKatarengaPawns(short** pawns) { /// nom sera commun
-    for (short i = 0; i < 8; i++) {
+void setKatarengaPawns(int** pawns) { /// nom sera commun
+    for (int i = 0; i < 8; i++) {
         pawns[0][i] = 2;
         pawns[7][i] = 1;
     }
 }
 
-short canCamp(short turn, short x, short y) {
+int canCamp(int turn, int x) {
     return ((turn == 0 && x == 0) || (turn == 1 && x == 7));
 }
 
-short katarengaEnd(short** board, short** pawns, short turn, struct Player* players) {
+int katarengaEnd(int** board, int** pawns, int turn, struct Player* players) {
 
     /*if (players[turn].value >= 2) {
         return 1;
     }*/
 
-    short i, j;
-    short nbOppPiece = 0;
-    short oppPiece = 1 - turn + 1;
+    int i, j;
+    int nbOppPiece = 0;
+    int oppPiece = 1 - turn + 1;
 
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
@@ -46,10 +46,10 @@ short katarengaEnd(short** board, short** pawns, short turn, struct Player* play
     return 1;
 }
 
-short katarenga(SDL_Window* window, SDL_Renderer* renderer, short** board, short** pawns, struct Player* players, short gridXY, short gameValue, short prevGridXY, short turn, short round) {
+int katarenga(SDL_Window* window, SDL_Renderer* renderer, int** board, int** pawns, struct Player* players, int gridXY, int gameValue, int prevGridXY, int turn, int round) {
 
-     short x = getSingleCoord(gridXY, 0);
-     short y = getSingleCoord(gridXY, 1);
+     int x = getSingleCoord(gridXY, 0);
+     int y = getSingleCoord(gridXY, 1);
 
     if (prevGridXY == -1) { // Demande de selection
         printf(">Selecting: %d;%d\n", x, y);
@@ -58,15 +58,13 @@ short katarenga(SDL_Window* window, SDL_Renderer* renderer, short** board, short
         display2Boards(board, pawns);
         return gridXY;
     } else { //demande de mouvement, camp sera verif si clic
-
-        short pawnX = getSingleCoord(prevGridXY, 0);
-        short pawnY = getSingleCoord(prevGridXY, 1);
+        int pawnX = getSingleCoord(prevGridXY, 0);
+        int pawnY = getSingleCoord(prevGridXY, 1);
         if (!canMove(pawns, x, y)) { showError("Your selected pawn cannot move here."); return -1; };
         printf(">Moving: %d;%d to %d;%d\n", pawnX, pawnY, x, y);
         clearMovable(pawns);
         pawns[pawnX][pawnY] = 0;
         pawns[x][y] = turn + 1;
-
     }
 
     if (katarengaEnd(board, pawns, turn, players)) { return -2; };

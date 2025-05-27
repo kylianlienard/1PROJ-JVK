@@ -13,7 +13,7 @@
 
 //- TEMP AVANT GUI -//
 
-char symbl(short value, short boardTab) {
+char symbl(int value, int boardTab) {
     if (boardTab) {
         switch (value) {
             case 0: return '+';
@@ -31,22 +31,22 @@ char symbl(short value, short boardTab) {
     }
 }
 
-void displayBoard(short** board, short boardTab) { // si boardTab == 1 cela affichera les symboles pour "board",  pour "pawns"
+void displayBoard(int** board, int boardTab) { // si boardTab == 1 cela affichera les symboles pour "board",  pour "pawns"
     printf(" y ");
-    for (short i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++) {
         printf("%d ", i);
     }
     printf("\nx+----------------\n");
-    for (short i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++) {
         printf("%d| ", i);
-        for (short j = 0; j < 8; j++) {
+        for (int j = 0; j < 8; j++) {
             printf("%c ", symbl(board[i][j], boardTab));
         }
         printf("\n");
     }
 }
 
-void display2Boards(short** board, short** pawns) { /// sera commun
+void display2Boards(int** board, int** pawns) { /// sera commun
     printf("Board:\n");
     displayBoard(board, 1); // board sera tjrs accomp de 1 et pawns avec 0
     printf("\nPawns:\n");
@@ -56,8 +56,8 @@ void display2Boards(short** board, short** pawns) { /// sera commun
 
 
 
-void drawBoard(SDL_Renderer* renderer, short** board, short** pawns, short sWE) {
-    short y, x;
+void drawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
+    int y, x;
     int cellSize = sWE / 8;
     int pawnMargin = cellSize / 8;
     int pawnSize = cellSize - (2 * pawnMargin);
@@ -107,7 +107,7 @@ void drawBoard(SDL_Renderer* renderer, short** board, short** pawns, short sWE) 
 
 //- VRAI -//
 
-short gridClick(short mouseX, short mouseY, short sWE) {
+int gridClick(int mouseX, int mouseY, int sWE) {
     int cellSize = sWE / 8;
     int gridX = mouseX / cellSize;
     int gridY = mouseY / cellSize;
@@ -118,7 +118,7 @@ short gridClick(short mouseX, short mouseY, short sWE) {
     return -1;
 }
 
-short getShortestWindowEdge(SDL_Window* window) {
+int getShortestWindowEdge(SDL_Window* window) {
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
     return (width < height) ? width : height;

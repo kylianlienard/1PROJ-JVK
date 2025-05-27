@@ -1,4 +1,3 @@
-// Menu UI
 #ifndef fileUI
 #include "ui.h"
 #endif
@@ -28,7 +27,14 @@ SDL_Color colorFond = {200, 200, 200, 255};
 SDL_Color colorFondBouton = {50, 150, 255, 255};
 SDL_Color colorTextBouton = {0, 0, 0, 255};
 // pour modif : colorFond = (SDL_Color){255, 0, 0, 255};
-struct Run;
+
+struct MenuParams {
+    int type;
+    int game;
+    char player1;
+    char player2;
+};
+
 // Mode Solo
 char player1Text[100] = "";
 char player2Text[100] = "";
@@ -42,18 +48,18 @@ char onlinePlayerName[100] = "";
 int onlinePlayerActive = 0;   // Pour saisie du nom dans le menu Online
 char onlineJoinIP[INET_ADDRSTRLEN] = "";
 int onlineJoinActive = 0;     // Pour saisie de l'IP dans le mode Rejoindre
-char opponentName[100] = "";  // Nom de lâ€™adversaire reÃ§u par le serveur
+char opponentName[100] = "";  // Nom de l’adversaire reçu par le serveur
 char serverIP[INET_ADDRSTRLEN] = ""; // Adresse IP du serveur
-int onlineConnected = 0;      // Passe Ã  1 quand une connexion est Ã©tablie
+int onlineConnected = 0;      // Passe à 1 quand une connexion est établie
 
 /*
   Valeurs de menuState :
     0 = Menu Principal,
     1 = Menu Mode de Jeu (Solo, Online, Load, QUIT),
-    2 = SÃ©lection des joueurs en mode Solo,
+    2 = Sélection des joueurs en mode Solo,
     3 = Menu Online (saisie du nom + boutons "Creer" et "Rejoindre"),
-    4 = Online Serveur (page "CrÃ©ation" et attente dâ€™un adversaire),
-    5 = Online Client (page "Rejoindre" et saisie de lâ€™IP)
+    4 = Online Serveur (page "Création" et attente d’un adversaire),
+    5 = Online Client (page "Rejoindre" et saisie de l’IP)
 */
 
 /*---------------- Prototypes ----------------*/
@@ -68,7 +74,7 @@ void* serverThreadFunc(void *arg);
 void joinServer(const char* ip, const char* message);
 int serverThreadFuncWrapper(void *arg);  // Pour SDL_CreateThread
 
-// Fonction pour obtenir l'IP publique (la premiÃ¨re adresse non-loopback)
+// Fonction pour obtenir l'IP publique (la première adresse non-loopback)
 char *getPublicIP() {
     static char publicIP[INET_ADDRSTRLEN];
     char hostname[256];
@@ -82,7 +88,7 @@ char *getPublicIP() {
         return publicIP;
     }
     int i = 0;
-    // Parcourir les adresses et retourner la premiÃ¨re qui ne commence pas par "127."
+    // Parcourir les adresses et retourner la première qui ne commence pas par "127."
     for (; hp->h_addr_list[i] != NULL; i++) {
         struct in_addr addr;
         memcpy(&addr, hp->h_addr_list[i], sizeof(addr));
@@ -92,7 +98,7 @@ char *getPublicIP() {
             return publicIP;
         }
     }
-    // Sinon, retourner la premiÃ¨re adresse
+    // Sinon, retourner la première adresse
     struct in_addr addr;
     memcpy(&addr, hp->h_addr_list[0], sizeof(addr));
     strcpy(publicIP, inet_ntoa(addr));
@@ -216,7 +222,7 @@ void showPlayerSelectionMenu(SDL_Renderer* renderer, int width, int height, TTF_
     SDL_FreeSurface(labelSurface);
     SDL_DestroyTexture(labelTexture);
 
-    // Case Ã  cocher "Jouer contre un bot"
+    // Case à cocher "Jouer contre un bot"
     int botY = field2Y + fieldH + 20;
     SDL_Rect botCheckbox = { fieldX, botY, 20, 20 };
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -239,7 +245,7 @@ void showPlayerSelectionMenu(SDL_Renderer* renderer, int width, int height, TTF_
                            botCheckbox.x, botCheckbox.y + botCheckbox.h);
     }
 
-    // SÃ©lection du type de jeu
+    // Sélection du type de jeu
     int gameTypeY = botY + 40;
     int margin = 10;
     int gameFieldX = fieldX - 50;
@@ -381,7 +387,7 @@ void showOnlineCreer(SDL_Renderer* renderer, int width, int height, TTF_Font* fo
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTexture);
 
-    // Affichage de l'IP du serveur (cette IP est dÃ©sormais obtenue dynamiquement)
+    // Affichage de l'IP du serveur (cette IP est désormais obtenue dynamiquement)
     char ipMsg[150];
     snprintf(ipMsg, sizeof(ipMsg), "Votre IP : %s", serverIP);
     titleSurface = TTF_RenderText_Solid(font, ipMsg, textColor);
@@ -459,9 +465,9 @@ void showOnlineJoin(SDL_Renderer* renderer, int width, int height, TTF_Font* fon
     SDL_RenderPresent(renderer);
 }
 
-/*---------------- Fonctions de rÃ©seau ----------------*/
+/*---------------- Fonctions de réseau ----------------*/
 
-// Fonction serveur : attend une connexion et reÃ§oit le nom du client.
+// Fonction serveur : attend une connexion et reçoit le nom du client.
 void* serverThreadFunc(void *arg) {
     int sockfd, newsockfd;
     struct sockaddr_in serv_addr, cli_addr;
@@ -470,7 +476,7 @@ void* serverThreadFunc(void *arg) {
 
     sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd == INVALID_SOCKET) {
-        fprintf(stderr, "Erreur lors de l'ouverture de la socket: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de l'ouverture de la socket: %d\n", WSAGetLastError());
         return NULL;
     }
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -479,13 +485,13 @@ void* serverThreadFunc(void *arg) {
     serv_addr.sin_port = htons(PORT);
 
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) {
-        fprintf(stderr, "Erreur lors du bind: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors du bind: %d\n", WSAGetLastError());
         closesocket(sockfd);
         return NULL;
     }
 
     if (listen(sockfd, 5) == SOCKET_ERROR) {
-        fprintf(stderr, "Erreur lors de l'Ã©coute: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de l'écoute: %d\n", WSAGetLastError());
         closesocket(sockfd);
         return NULL;
     }
@@ -496,18 +502,18 @@ void* serverThreadFunc(void *arg) {
     clilen = sizeof(cli_addr);
     newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
     if (newsockfd == INVALID_SOCKET) {
-        fprintf(stderr, "Erreur lors de l'acceptation: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de l'acceptation: %d\n", WSAGetLastError());
         closesocket(sockfd);
         return NULL;
     }
     memset(buffer, 0, sizeof(buffer));
     if (recv(newsockfd, buffer, sizeof(buffer) - 1, 0) == SOCKET_ERROR) {
-        fprintf(stderr, "Erreur lors de la rÃ©ception: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de la réception: %d\n", WSAGetLastError());
         closesocket(newsockfd);
         closesocket(sockfd);
         return NULL;
     }
-    printf("Message reÃ§u : %s\n", buffer);
+    printf("Message reçu : %s\n", buffer);
     strcpy(opponentName, buffer);
     onlineConnected = 1;
     closesocket(newsockfd);
@@ -521,7 +527,7 @@ void joinServer(const char* ip, const char* message) {
     struct sockaddr_in serv_addr;
     sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd == INVALID_SOCKET) {
-        fprintf(stderr, "Erreur lors de l'ouverture de la socket: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de l'ouverture de la socket: %d\n", WSAGetLastError());
         return;
     }
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -533,14 +539,14 @@ void joinServer(const char* ip, const char* message) {
         return;
     }
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) {
-        fprintf(stderr, "Erreur lors de la connexion: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de la connexion: %d\n", WSAGetLastError());
         closesocket(sockfd);
         return;
     }
     if (send(sockfd, message, (int)strlen(message), 0) == SOCKET_ERROR) {
-        fprintf(stderr, "Erreur lors de l'envoi du message: %ld\n", WSAGetLastError());
+        fprintf(stderr, "Erreur lors de l'envoi du message: %d\n", WSAGetLastError());
     }
-    printf("Message envoyÃ© : %s\n", message);
+    printf("Message envoyé : %s\n", message);
     closesocket(sockfd);
 }
 
@@ -551,22 +557,20 @@ int serverThreadFuncWrapper(void *arg) {
 }
 
 /*---------------- Main ----------------*/
-struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
-    struct Run game;
-    game.run = 1;
+int menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font, WSADATA wsaData, struct MenuParams *mp) {
     SDL_Event event;
-    // 0 = Main Menu, 1 = Mode de Jeu, 2 = SÃ©lection Solo, 3 = Menu Online,
+    // 0 = Main Menu, 1 = Mode de Jeu, 2 = Sélection Solo, 3 = Menu Online,
     // 4 = Online Serveur, 5 = Online Client
     int menuState = 1;
     SDL_Thread* serverThread = NULL;
 
-    while (game.run) {
+    while (1) {
         int width, height;
         SDL_GetWindowSize(window, &width, &height);
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
-                game.run = 0;
+                return 0;
 
             // Menu Principal
             if (menuState == 0) {
@@ -593,7 +597,7 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
 
                     if (mouseX >= soloButton.x && mouseX <= soloButton.x + soloButton.w &&
                         mouseY >= soloButton.y && mouseY <= soloButton.y + soloButton.h) {
-                        menuState = 2;  // Mode Solo 
+                        menuState = 2;  // Mode Solo
                     }
                     else if (mouseX >= onlineButton.x && mouseX <= onlineButton.x + onlineButton.w &&
                              mouseY >= onlineButton.y && mouseY <= onlineButton.y + onlineButton.h) {
@@ -601,7 +605,7 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                     }
                     else if (mouseX >= loadButton.x && mouseX <= loadButton.x + loadButton.w &&
                              mouseY >= loadButton.y && mouseY <= loadButton.y + loadButton.h) {
-                        printf("Bouton Load cliquÃ©.\n");
+                        printf("Bouton Load cliqué.\n");
                     }
                     else if (mouseX >= quitButton.x && mouseX <= quitButton.x + quitButton.w &&
                              mouseY >= quitButton.y && mouseY <= quitButton.y + quitButton.h) {
@@ -610,12 +614,12 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                             SDL_DestroyRenderer(renderer);
                             SDL_DestroyWindow(window);
                             SDL_Quit();
-                            
+
                             WSACleanup();
                     }
                 }
             }
-            // SÃ©lection des joueurs en mode Solo
+            // Sélection des joueurs en mode Solo
             else if (menuState == 2) {
                 if (event.type == SDL_MOUSEBUTTONDOWN) {
                     int mouseX = event.button.x, mouseY = event.button.y;
@@ -648,7 +652,7 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                         againstBot = !againstBot;
                     }
 
-                    // SÃ©lection du type de jeu
+                    // Sélection du type de jeu
                     int margin = 10;
                     int gameFieldX = fieldX - 50;
                     int gameFieldWidth = fieldW + 100;
@@ -672,18 +676,18 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                     {
                         printf("Lancement de la partie Solo...\n");
                         printf("Joueur 1 : %s\n", player1Text);
-                        game.player1 = player1Text;
-                        game.player2 = player2Text;
-                        game.run = 11; //local 1V1
+                        mp->player1 = player1Text;
+                        mp->player2 = player2Text;
+                        mp->type = 11; //local 1V1
                         if (againstBot){
-                            printf("Mode Bot activÃ© pour Joueur 2.\n");
-                            game.player2 = "Bot";
-                            game.run = 12; //local + bot1
+                            printf("Mode Bot activé pour Joueur 2.\n");
+                            mp->player2 = "Bot";
+                            mp->type = 12; //local + bot1
                         }
                         const char* types[3] = {"Katarenga", "Congress", "Isolation"};
-                        printf("Type de jeu sÃ©lectionnÃ© : %s\n", types[gameType]);
-                        game.game = gameType;
-                        return game;
+                        printf("Type de jeu sélectionné : %s\n", types[gameType]);
+                        mp->game = gameType;
+                        return 1;
                     }
                 }
                 if (event.type == SDL_TEXTINPUT) {
@@ -734,7 +738,7 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                         if (strlen(onlinePlayerName) > 0) {
                             serverThread = SDL_CreateThread(serverThreadFuncWrapper, "ServerThread", NULL);
                             if (serverThread == NULL) {
-                                printf("Erreur de crÃ©ation du thread serveur: %s\n", SDL_GetError());
+                                printf("Erreur de création du thread serveur: %s\n", SDL_GetError());
                             }
                             menuState = 4;
                         }
@@ -806,9 +810,9 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
                         onlineJoinIP[strlen(onlineJoinIP) - 1] = '\0';
                 }
             }
-        } // Fin boucle d'Ã©vÃ©nements
+        } // Fin boucle d'événements
 
-        // Rendu selon l'Ã©tat
+        // Rendu selon l'état
         if (menuState == 0)
             showMainMenu(renderer, width, height, font);
         else if (menuState == 1)
@@ -824,7 +828,8 @@ struct Run menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font) {
 
         SDL_Delay(16);  // ~60
     }
-    return game;
+    return 0;
+
 }
 
 #endif
