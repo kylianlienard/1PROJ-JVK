@@ -15,9 +15,7 @@
 #include "./src/core/ui.h"
 #include "./src/core/menu.h"
 #include "./src/game/board.h"
-
-#define GRID_SIZE 8
-#define CHAR_LENGTH 32
+//char length 32
 
 struct Player {
     char name[20];
@@ -27,10 +25,6 @@ struct Player {
 void d(const char *txt) {
     printf("<%s>\n", txt);
 }
-
-int main(int argc, char* argv[]);
-
-//#include "./src/game/katarenga.h"
 
 int main(int argc, char* argv[]) {
 
@@ -44,10 +38,18 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    Network* network = createNetwork();
+    if (!network) {
+        printf("ERROR network\n");
+        destroyNetworkState(network);
+        return 1;
+    }
+
     //- Testing SDL librairies -//
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("ERROR Init SDL: %s\n", SDL_GetError());
+        destroyNetworkState(network);
         return -1;
     }
 
@@ -55,7 +57,7 @@ int main(int argc, char* argv[]) {
     if (!window) {
         printf("ERROR Init Window: %s\n", SDL_GetError());
         SDL_Quit();
-        WSACleanup();
+        destroyNetworkState(network);
         return -1;
     }
 
@@ -64,7 +66,7 @@ int main(int argc, char* argv[]) {
         printf("ERROR Init Renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
-        WSACleanup();
+        destroyNetworkState(network);
         return -1;
     }
 
@@ -83,20 +85,19 @@ int main(int argc, char* argv[]) {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
-        WSACleanup();
+        destroyNetworkState(network);
     }
-
-    // more tests
-
-
 
     //- Loop -//
 
-    struct MenuParams mp = {0, 0, 'A', 'B'};
+    struct MenuParams mp = {1, 0, 'A', 'B'};
     int r = 1;
+    int theme = 0;
+    setBgTheme(renderer, theme);
 
     while (r){
-        r = menu(window, renderer, font, wsaData, &mp);
+        r = menu(window, renderer, font, wsaData, &mp, network);
+        if (!r) { break; }
 
         struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
         if (!players) {
@@ -109,13 +110,15 @@ int main(int argc, char* argv[]) {
             players[plna].value = 0;
         }
 
-        printf("BEFORE GAMELOOP: Type %d Game %d P1 %s P2 %s", mp.type, mp.game, players[0].name, players[1].name);
-        r = gameLoop(window, renderer, mp.type, mp.game, players);
+        //printf("BEFORE GAMELOOP: Type %d Game %d P1 %s P2 %s", mp.type, mp.game, players[0].name, players[1].name);
+        r = gameLoop(window, renderer, mp.type, mp.game, players, theme);
     }
-
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    destroyNetworkState(network);
 
     return 0;
 }

@@ -13,10 +13,6 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="C:/SDL2old/i686-w64-mingw32/include" />
-					<Add directory="C:/SDL2old/SDL2_ttf-devel-2.0.18-mingw/SDL2_ttf-2.0.18/i686-w64-mingw32/include" />
-					<Add directory="C:/SDL2old/SDL2_image-2.8.8/i686-w64-mingw32/include" />
-					<Add directory="C:/SDL2old/SDL2_mixer-2.8.1/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lws2_32" />
@@ -30,10 +26,6 @@
 					<Add library="libSDL2_mixer.dll.a" />
 					<Add library="libSDL2_image.a" />
 					<Add library="libSDL2_image.dll.a" />
-					<Add directory="C:/SDL2old/i686-w64-mingw32/lib" />
-					<Add directory="C:/SDL2old/SDL2_ttf-devel-2.0.18-mingw/SDL2_ttf-2.0.18/i686-w64-mingw32/lib" />
-					<Add directory="C:/SDL2old/SDL2_image-2.8.8/i686-w64-mingw32/lib" />
-					<Add directory="C:/SDL2old/SDL2_mixer-2.8.1/i686-w64-mingw32/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -56,10 +48,7 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/ai/ai.h" />
-		<Unit filename="src/ai/ai_congress.h" />
-		<Unit filename="src/ai/ai_isolation.h" />
-		<Unit filename="src/ai/ai_katarenga.h" />
+		<Unit filename="src/core/ai.h" />
 		<Unit filename="src/core/menu.h" />
 		<Unit filename="src/core/online.h" />
 		<Unit filename="src/core/ui.h" />

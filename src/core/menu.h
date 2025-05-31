@@ -1,6 +1,21 @@
 #ifndef fileUI
 #include "ui.h"
 #endif
+
+#ifndef fileONLINE
+WSADATA wsaData;
+typedef struct {
+    WSADATA wsaData;
+    int serverSocket;
+    int clientSocket;
+    int isServer;
+    int isConnected;
+    char localPlayerName[100];
+    char opponentName[100];
+    char serverIP[INET_ADDRSTRLEN];
+} Network;
+#endif
+
 #ifndef fileMENU
 #define fileMENU
 #include "online.h"
@@ -73,37 +88,6 @@ void showOnlineJoin(SDL_Renderer* renderer, int width, int height, TTF_Font* fon
 void* serverThreadFunc(void *arg);
 void joinServer(const char* ip, const char* message);
 int serverThreadFuncWrapper(void *arg);  // Pour SDL_CreateThread
-
-// Fonction pour obtenir l'IP publique (la première adresse non-loopback)
-char *getPublicIP() {
-    static char publicIP[INET_ADDRSTRLEN];
-    char hostname[256];
-    if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
-        strcpy(publicIP, "127.0.0.1");
-        return publicIP;
-    }
-    struct hostent *hp = gethostbyname(hostname);
-    if (hp == NULL) {
-        strcpy(publicIP, "127.0.0.1");
-        return publicIP;
-    }
-    int i = 0;
-    // Parcourir les adresses et retourner la première qui ne commence pas par "127."
-    for (; hp->h_addr_list[i] != NULL; i++) {
-        struct in_addr addr;
-        memcpy(&addr, hp->h_addr_list[i], sizeof(addr));
-        const char *ipStr = inet_ntoa(addr);
-        if (strncmp(ipStr, "127.", 4) != 0) {
-            strcpy(publicIP, ipStr);
-            return publicIP;
-        }
-    }
-    // Sinon, retourner la première adresse
-    struct in_addr addr;
-    memcpy(&addr, hp->h_addr_list[0], sizeof(addr));
-    strcpy(publicIP, inet_ntoa(addr));
-    return publicIP;
-}
 
 /*---------------- Fonctions d'affichage ----------------*/
 
@@ -497,7 +481,7 @@ void* serverThreadFunc(void *arg) {
     }
 
     // Utilisez la fonction getPublicIP pour obtenir l'adresse IP publique
-    strncpy(serverIP, getPublicIP(), INET_ADDRSTRLEN);
+    strncpy(serverIP, getPublicIP(nw), INET_ADDRSTRLEN);
     printf("Serveur : en attente de connexion sur le port %d...\n", PORT);
     clilen = sizeof(cli_addr);
     newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
@@ -557,10 +541,11 @@ int serverThreadFuncWrapper(void *arg) {
 }
 
 /*---------------- Main ----------------*/
-int menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font, WSADATA wsaData, struct MenuParams *mp) {
+int menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font, WSADATA wsaData, struct MenuParams *mp, Network* nw) {
     SDL_Event event;
     // 0 = Main Menu, 1 = Mode de Jeu, 2 = Sélection Solo, 3 = Menu Online,
     // 4 = Online Serveur, 5 = Online Client
+    mp->type = 0;
     int menuState = 1;
     SDL_Thread* serverThread = NULL;
 
@@ -609,13 +594,7 @@ int menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font, WSADATA wsa
                     }
                     else if (mouseX >= quitButton.x && mouseX <= quitButton.x + quitButton.w &&
                              mouseY >= quitButton.y && mouseY <= quitButton.y + quitButton.h) {
-                            TTF_CloseFont(font);
-                            TTF_Quit();
-                            SDL_DestroyRenderer(renderer);
-                            SDL_DestroyWindow(window);
-                            SDL_Quit();
-
-                            WSACleanup();
+                            return 0;
                     }
                 }
             }
@@ -813,9 +792,7 @@ int menu(SDL_Window* window, SDL_Renderer* renderer, TTF_Font* font, WSADATA wsa
         } // Fin boucle d'événements
 
         // Rendu selon l'état
-        if (menuState == 0)
-            showMainMenu(renderer, width, height, font);
-        else if (menuState == 1)
+        if (menuState == 1)
             showGameModeMenu(renderer, width, height, font);
         else if (menuState == 2)
             showPlayerSelectionMenu(renderer, width, height, font);

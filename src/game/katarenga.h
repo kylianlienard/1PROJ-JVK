@@ -37,7 +37,7 @@ int katarengaEnd(int** board, int** pawns, int turn, struct Player* players) {
 
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            if (pawns[i][j] == oppPiece && setMoves(board, pawns, turn, board[i][j], i, j, 1, 1)) { // 1 est par logique, on ne perd pas le premier tour, peut causer des problèmes
+            if (pawns[i][j] == oppPiece && setMoves(board, pawns, turn, board[i][j], i, j, 1, 1)) { // 1er 1 est par logique, on ne perd pas le premier tour, peut causer des problèmes
                 if (++nbOppPiece > 1) return 0;
             }
         }
@@ -66,6 +66,7 @@ int katarenga(SDL_Window* window, SDL_Renderer* renderer, int** board, int** paw
         pawns[pawnX][pawnY] = 0;
         pawns[x][y] = turn + 1;
     }
+    //manger propre pion si 2 red
 
     if (katarengaEnd(board, pawns, turn, players)) { return -2; };
     display2Boards(board, pawns);

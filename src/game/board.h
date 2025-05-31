@@ -7,14 +7,10 @@
 #include "board_ui.h"
 #endif
 
-#ifndef fileAI
-#include "../ai/ai.h"
-#endif
-
 struct Player;
 int selectPawn(int** pawns, int turn, int x, int y);
 int canMove(int** pawns, int x, int y);
-int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players);
+int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players, int theme);
 int switchTurn(int turn);
 int getSingleCoord(int clickXY, int coord);
 int setMoves(int** board, int** pawns, int turn, int cell, int x, int y, int canEat, int directReturn);
@@ -28,9 +24,10 @@ unsigned int rand8() { return rand() % 8; }
 #include "katarenga.h"
 #endif
 
-/*#ifndef fileAI_KATARENGA
-#include "../ai/ai_katarenga.h"
-#endif*/
+#ifndef fileCONGRESS
+#include "congress.h"
+#endif
+
 
 //- Constants -//
 
@@ -257,7 +254,11 @@ int setMoves(int** board, int** pawns, int turn, int cell, int x, int y, int can
                 cox += moves[i][0];
                 coy += moves[i][1];
             }
-            if ((correctCoord(cox, coy) && board[cox][coy] == cell) || (canEat && correctCoord(cox, coy) && pawns[cox][coy] == 1 - turn + 1)) {
+            if (correctCoord(cox,coy)) {
+                printf(">>>>>choosing to eat for %d;%d: %d || %d\n", cox, coy, board[cox][coy] == cell, canEat && pawns[cox][coy] == 1 - turn + 1);
+            }
+
+            if (correctCoord(cox,coy) && canPlace(pawns, turn, cox, coy, canEat)) {
                 if (directReturn) return 1;
                 setMovable(pawns, cox, coy);
             }
@@ -279,11 +280,11 @@ void clearMovable(int** pawns) {
     }
 }
 
-void redrawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
+void redrawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE, int theme) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
-    drawBoard(renderer, board, pawns, sWE);
+    drawBoard(renderer, board, pawns, sWE, theme);
     //drawUI()
 
     SDL_RenderPresent(renderer);
@@ -291,7 +292,7 @@ void redrawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
 }
 
 // Block quand c'est mon tour, gerer IA
-int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players) { //0 local, 1 IA, 2 network
+int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playingGame, struct Player* players, int theme) { //0 local, 1 IA, 2 network
     SDL_Event event;
     int gameValue = -1; // 0 rien, 1 un pion est select, -2 si fin, -1 si joeuru rejoue
     int prevGameValue = -1; // Si vide, donc coup d'avant pas enregistré
@@ -300,8 +301,6 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playi
     int round = 0;
     int sWE = getShortestWindowEdge(window);
     int gridXY = -1;
-
-    // Une methode qui connaître qui joue actuellement
 
     /*struct Player* players = (struct Player*)malloc(2 * sizeof(struct Player));
     if (!players) {
@@ -323,25 +322,27 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playi
     switch(playingGame) {
     case 0:
         setKatarengaPawns(pawns); break;
+    case 1:
+        setCongressPawns(pawns); break;
     }
 
-    drawBoard(renderer, board, pawns, sWE);
+    drawBoard(renderer, board, pawns, sWE, theme);
     SDL_RenderPresent(renderer);
 
     while (1) {
-        while (SDL_PollEvent(&event)) { // bouge souris
+        while (SDL_PollEvent(&event)) {
             switch(event.type){
             case SDL_QUIT:
                 //Disconnect si online
                 return 0;
             case SDL_WINDOWEVENT:
                 sWE = getShortestWindowEdge(window);
-                redrawBoard(renderer, board, pawns, sWE);
+                redrawBoard(renderer, board, pawns, sWE, theme);
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                if (turn == yourTurn) {
-                    gridXY = gridClick(event.button.x, event.button.y, sWE);
-                }
+                //if (turn == yourTurn) {
+                gridXY = gridClick(event.button.x, event.button.y, sWE);
+                // }
 
                 if (gridXY != -1) { // si le click est dans le tableau
 
@@ -349,14 +350,14 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playi
                         clearMovable(pawns);
                         prevGameValue = -1;
                         d("Deselected");
-                        redrawBoard(renderer, board, pawns, sWE);
+                        redrawBoard(renderer, board, pawns, sWE, theme);
                         continue;
                     }
 
                     if (playingGame == 0) {
                         gameValue = katarenga(window, renderer, board, pawns, players, gridXY, gameValue, prevGameValue, turn, round);
                     } else if (playingGame == 1) {
-                        d("Conge");
+                        gameValue = congress(window, renderer, board, pawns, players, gridXY, gameValue, prevGameValue, turn, round);
                     } else {
                         d("L'islation chez les jeunes, 110%");
                     }
@@ -388,13 +389,13 @@ int gameLoop(SDL_Window* window, SDL_Renderer* renderer, int gameType, int playi
                 else {
                     printf("What to do %d;%d\n", event.button.x, event.button.y);
                 }
-                redrawBoard(renderer, board, pawns, sWE);
+                redrawBoard(renderer, board, pawns, sWE, theme);
                 break;
             }
         }
     }
 
     return 0; // 1 pour continuer a run
-}
+};
 
 #endif
