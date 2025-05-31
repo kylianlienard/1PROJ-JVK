@@ -10,48 +10,30 @@
 #include <stdio.h>
 
 void congress_debug() {
-    printf("Game Katarenga\n");
+    printf("Game con\n");
 }
 
 void congress_use() {
-    printf("Katarenga used\n");
+    printf("cin used\n");
 }
 
-#define EMPTY 0
-#define WHITE 1
-#define BLACK 2
+void setCongressPawns(int** pawns) {
+    int pattern[8] = {0, 2, 0, 1, 2, 0, 1, 0};
 
-void setCongressPawns(int pawns[8][8]) {
-    int pattern[8] = {EMPTY, BLACK, EMPTY, WHITE, EMPTY, BLACK, EMPTY, WHITE};
-
-
-        // Clear
-    for (int y = 0; y < 8; y++)
-        for (int x = 0; x < 8; x++)
-            pawns[y][x] = EMPTY;
-
-    // (row 0)
     for (int x = 0; x < 8; x++)
         pawns[0][x] = pattern[x];
 
-    // (row 7)
     for (int x = 0; x < 8; x++)
-        pawns[7][x] = pattern[x];
+        pawns[7][7 - x] = pattern[x];
 
-    // (col 0)
     for (int y = 0; y < 8; y++)
-        pawns[y][0] = pattern[y];
+        pawns[7 - y][0] = pattern[y];
 
-    // (col 7)
     for (int y = 0; y < 8; y++)
         pawns[y][7] = pattern[y];
 }
 
-int canCamp(int turn, int x) {
-    return ((turn == 0 && x == 0) || (turn == 1 && x == 7));
-}
-
-int CongressEnd(int pawns[8][8], int color) {
+int CongressEnd(int** pawns, int color) {
     for (int i = 0; i < 8; i++) {
         int hori = 0, vert = 0;
         for (int j = 0; j < 8; j++) {
@@ -62,7 +44,8 @@ int CongressEnd(int pawns[8][8], int color) {
     }
     return 0;
 }
-int katarenga(SDL_Window* window, SDL_Renderer* renderer, int** board, int** pawns, struct Player* players, int gridXY, int gameValue, int prevGridXY, int turn, int round) {
+
+int congress(SDL_Window* window, SDL_Renderer* renderer, int** board, int** pawns, struct Player* players, int gridXY, int gameValue, int prevGridXY, int turn, int round) {
 
      int x = getSingleCoord(gridXY, 0);
      int y = getSingleCoord(gridXY, 1);
@@ -83,10 +66,9 @@ int katarenga(SDL_Window* window, SDL_Renderer* renderer, int** board, int** paw
         pawns[x][y] = turn + 1;
     }
 
-        int playerColor = (turn == 0) ? WHITE : BLACK;
-    if (CongressEnd(pawns, playerColor)) {
-        printf("Player %d wins!\n", turn + 1);
+    if (CongressEnd(pawns, turn + 1)) {
         return -2;
+    }
 
     return 0;
 }

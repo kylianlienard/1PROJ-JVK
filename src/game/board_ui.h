@@ -54,17 +54,15 @@ void display2Boards(int** board, int** pawns) { /// sera commun
     printf("\n");
 }
 
-
-
-void drawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
-    int y, x;
-    int cellSize = sWE / 8;
-    int pawnMargin = cellSize / 8;
-    int pawnSize = cellSize - (2 * pawnMargin);
-
-    for (y = 0; y < 8; y++) {
-        for (x = 0; x < 8; x++) {
-            switch (board[y][x]) {
+void getCellTheme(SDL_Renderer* renderer, int value, int x, int y, int theme) {
+    if (theme == 1) {
+        if ((x + y) % 2) {
+            SDL_SetRenderDrawColor(renderer, 115, 149, 82, 255);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 235, 236, 208, 255);
+        }
+    } else {
+        switch (value) {
             case 0:
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Rouge
                 break;
@@ -80,8 +78,23 @@ void drawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE) {
             default:
                 SDL_SetRenderDrawColor(renderer, 0, 90, 90, 90); // Default
                 break;
-            }
+        }
+    }
+}
 
+void getPawnTheme(SDL_Renderer* renderer, int value, int x, int y, int theme) {}
+
+
+void drawBoard(SDL_Renderer* renderer, int** board, int** pawns, int sWE, int theme) {
+    int y, x;
+    int cellSize = sWE / 8;
+    int pawnMargin = cellSize / 8;
+    int pawnSize = cellSize - (2 * pawnMargin);
+
+    for (y = 0; y < 8; y++) {
+        for (x = 0; x < 8; x++) {
+
+            getCellTheme(renderer, board[x][y], x, y, theme);
             SDL_Rect cell = {x * cellSize, y * cellSize, cellSize, cellSize};
             SDL_RenderFillRect(renderer, &cell);
 
